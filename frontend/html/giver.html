@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advice Giver</title>
+    <link rel="stylesheet" href="giver.css">
+</head>
+<body>
+
+<div class="brand">AdviceMe</div>
+
+<main class="container">
+
+    <!-- CARD 1: CATEGORY -->
+    <section class="glass-card" id="categorySection">
+        <h1>Choose a Category</h1>
+        <p>Help people who need guidance ✨</p>
+
+        <select id="category">
+            <option value="">Select Category</option>
+            <option value="career">Career</option>
+            <option value="finance">Finance</option>
+            <option value="relationship">Relationship</option>
+            <option value="mental">Mental Health</option>
+        </select>
+
+        <button id="showPeople">Show People</button>
+    </section>
+
+    <!-- CARD 2: PEOPLE QUEUE -->
+    <section class="glass-card hidden" id="peopleSection">
+        <h2>People in Queue</h2>
+
+        <div class="people-list">
+            <div class="person" onclick="openChat()">
+                <span class="badge">Anonymous</span>
+                <p>I feel lost in my career and scared of taking risks.</p>
+            </div>
+
+            <div class="person" onclick="openChat()">
+                <span class="badge">User_4521</span>
+                <p>I am confused about switching my job.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAT -->
+    <section class="glass-card hidden" id="chatBox">
+        <h3>Give Your Advice</h3>
+        <textarea placeholder="Type your advice here..."></textarea>
+        <button>Send Advice</button>
+    </section>
+
+</main>
+
+<script src="giver.js"></script>
+</body>
+</html>

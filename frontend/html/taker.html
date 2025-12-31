@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advice Taker Dashboard</title>
+    <link rel="stylesheet" href="taker.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <nav class="navbar">
+        <h2>AdviseMe</h2>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="dashboard">
+
+        <!-- Left Panel -->
+        <div class="card request-card">
+            <h3>Ask for Advice</h3>
+
+            <select>
+                <option disabled selected>Select Category</option>
+                <option>Career</option>
+                <option>Relationships</option>
+                <option>Mental Health</option>
+                <option>Finance</option>
+                <option>Life</option>
+            </select>
+
+            <select>
+                <option disabled selected>Urgency Level</option>
+                <option>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+            </select>
+
+            <textarea placeholder="Describe your situation..."></textarea>
+
+            <button class="primary-btn">Submit Request</button>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="card chat-card">
+            <h3>Your Conversations</h3>
+
+            <div class="empty-chat">
+                <p>No advice yet 💬</p>
+                <span>Once someone responds, it will appear here.</span>
+            </div>
+        </div>
+
+    </div>
+
+<script src="taker.js"></script>
+</body>
+</html>

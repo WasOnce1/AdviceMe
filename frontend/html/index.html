@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Advisory Platform | Login</title>
+</head>
+
+<body>
+
+    <div class="container" id="container">
+
+        <!-- SIGN UP -->
+        <div class="form-container sign-up">
+            <form>
+                <h1>Create Account</h1>
+                <span>Use your email to register</span>
+
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Password" required>
+
+                <!-- USER TYPE -->
+                <select required>
+                    <option value="" disabled selected>User Type</option>
+                    <option value="giver">Advice Giver</option>
+                    <option value="taker">Advice Taker</option>
+                </select>
+
+                <!-- USER PREFERENCE -->
+                <select required>
+                    <option value="" disabled selected>Profile Preference</option>
+                    <option value="anonymous">Anonymous</option>
+                    <option value="non_anonymous">Non-Anonymous</option>
+                </select>
+
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+
+        <!-- SIGN IN -->
+        <div class="form-container sign-in">
+            <form>
+                <h1>Sign In</h1>
+                <span>Use your email and password</span>
+
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Password" required>
+
+                <a href="#">Forgot your password?</a>
+                <button type="submit">Sign In</button>
+            </form>
+        </div>
+
+        <!-- TOGGLE -->
+        <div class="toggle-container">
+            <div class="toggle">
+                <div class="toggle-panel toggle-left">
+                    <h1>Welcome Back!</h1>
+                    <p>Login to continue helping or getting advice</p>
+                    <button class="hidden" id="login">Sign In</button>
+                </div>
+                <div class="toggle-panel toggle-right">
+                    <h1>Hello!</h1>
+                    <p>Create an account to start your advisory journey</p>
+                    <button class="hidden" id="register">Sign Up</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
