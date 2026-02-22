@@ -4,6 +4,7 @@ const jwt        = require("jsonwebtoken");
 const crypto     = require("crypto");
 const nodemailer = require("nodemailer");
 const db         = require("../db");
+const logger     = require("../logger");
 
 const router = express.Router();
 
@@ -23,16 +24,12 @@ const transporter = nodemailer.createTransport({
 ====================== */
 const verifyToken = (req, res, next) => {
   const header = req.headers.authorization;
-
-  if (!header) {
-    return res.status(401).json({ message: "No token provided" });
-  }
+  if (!header) return res.status(401).json({ message: "No token provided" });
 
   const token = header.split(" ")[1];
-
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { id, email, user_type }
+    req.user = decoded;
     next();
   } catch {
     return res.status(401).json({ message: "Invalid token" });
@@ -59,12 +56,19 @@ router.post("/signup", async (req, res) => {
 
     db.query(sql, [email, hashedPassword, user_type, preference], (err) => {
       if (err) {
-        return res.status(409).json({ message: "User already exists" });
+        // Only return "user already exists" for duplicate entry errors
+        if (err.code === "ER_DUP_ENTRY") {
+          return res.status(409).json({ message: "User already exists" });
+        }
+        // Log and return the real error for everything else
+        logger.error("Signup DB error", { email, error: err.message, code: err.code });
+        return res.status(500).json({ message: "Signup failed: " + err.message });
       }
       res.status(201).json({ message: "Signup successful" });
     });
-  } catch {
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    logger.error("Signup error", { error: err.message });
+    res.status(500).json({ message: "Server error: " + err.message });
   }
 });
 
@@ -76,7 +80,12 @@ router.post("/login", (req, res) => {
 
   const sql = "SELECT * FROM users WHERE email = ?";
   db.query(sql, [email], async (err, results) => {
-    if (err || results.length === 0) {
+    if (err) {
+      logger.error("Login DB error", { email, error: err.message });
+      return res.status(500).json({ message: "Server error: " + err.message });
+    }
+
+    if (results.length === 0) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
@@ -88,11 +97,7 @@ router.post("/login", (req, res) => {
     }
 
     const token = jwt.sign(
-      {
-        id:        user.id,
-        email:     user.email,
-        user_type: user.user_type
-      },
+      { id: user.id, email: user.email, user_type: user.user_type },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -108,18 +113,17 @@ router.post("/login", (req, res) => {
 
 /* ======================
    FORGOT PASSWORD
-   Step 1 — Send OTP
 ====================== */
 router.post("/forgot-password", (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });
 
   db.query("SELECT id FROM users WHERE email = ?", [email], (err, rows) => {
-    if (err)         return res.status(500).json({ message: "DB error" });
+    if (err)          return res.status(500).json({ message: "DB error" });
     if (!rows.length) return res.status(404).json({ message: "No account found with this email" });
 
     const otp     = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const expires = new Date(Date.now() + 10 * 60 * 1000);
 
     db.query(
       `UPDATE users SET reset_otp = ?, reset_otp_expires = ? WHERE email = ?`,
@@ -144,12 +148,10 @@ router.post("/forgot-password", (req, res) => {
               </div>
             `
           });
-
           res.json({ message: "Reset code sent to your email" });
-
         } catch (mailErr) {
-          console.error("Email send error:", mailErr.message);
-          res.status(500).json({ message: "Failed to send email. Check EMAIL_USER and EMAIL_PASS in .env" });
+          logger.error("Email send error", { error: mailErr.message });
+          res.status(500).json({ message: "Failed to send email" });
         }
       }
     );
@@ -158,7 +160,6 @@ router.post("/forgot-password", (req, res) => {
 
 /* ======================
    VERIFY OTP
-   Step 2 — Check code
 ====================== */
 router.post("/verify-otp", (req, res) => {
   const { email, otp } = req.body;
@@ -180,7 +181,6 @@ router.post("/verify-otp", (req, res) => {
       if (reset_otp !== otp)
         return res.status(400).json({ message: "Incorrect code. Try again." });
 
-      // Generate secure reset token valid for 15 min
       const resetToken  = crypto.randomBytes(32).toString("hex");
       const tokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
@@ -201,7 +201,6 @@ router.post("/verify-otp", (req, res) => {
 
 /* ======================
    RESET PASSWORD
-   Step 3 — Save new pw
 ====================== */
 router.post("/reset-password", async (req, res) => {
   const { reset_token, new_password } = req.body;
@@ -223,9 +222,7 @@ router.post("/reset-password", async (req, res) => {
       const hashed = await bcrypt.hash(new_password, 10);
 
       db.query(
-        `UPDATE users
-         SET password = ?, reset_token = NULL, reset_token_expires = NULL
-         WHERE reset_token = ?`,
+        `UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE reset_token = ?`,
         [hashed, reset_token],
         (err) => {
           if (err) return res.status(500).json({ message: "Failed to reset password" });
@@ -236,7 +233,5 @@ router.post("/reset-password", async (req, res) => {
   );
 });
 
-/* EXPORT MIDDLEWARE */
 router.verifyToken = verifyToken;
-
 module.exports = router;
