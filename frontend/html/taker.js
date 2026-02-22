@@ -8,9 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeBtn       = document.getElementById("closeProfile");
   const profileContent = document.getElementById("profileContent");
 
-  const PROFILE_API = "adviceme-production.up.railway.app/api/profile";
-  const REQUEST_API = "adviceme-production.up.railway.app/api/requests";
-  const ADVICE_API  = "adviceme-production.up.railway.app/api/advice";
+  const PROFILE_API = "https://adviceme-production.up.railway.app/api/profile";
+  const REQUEST_API = "https://adviceme-production.up.railway.app/api/requests";
+  const ADVICE_API  = "https://adviceme-production.up.railway.app/api/advice";
 
   const COOLDOWN_MS  = 30 * 60 * 1000; // 30 minutes
   const COOLDOWN_KEY = "last_request_time";

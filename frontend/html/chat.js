@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let otherUsername = null;
 
   /* ================= FETCH MY USERNAME ================= */
-  const meRes  = await fetch("adviceme-production.up.railway.app/api/profile/me", {
+  const meRes  = await fetch("https://adviceme-production.up.railway.app/api/profile/me", {
     headers: { Authorization: `Bearer ${token}` }
   });
   const meData = await meRes.json();
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* ================= LOAD CHAT LIST ================= */
   async function loadChatList() {
     try {
-      const res   = await fetch("adviceme-production.up.railway.app/api/chat/list", {
+      const res   = await fetch("https://adviceme-production.up.railway.app/api/chat/list", {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!adviceId) return;
 
     try {
-      const res = await fetch(`adviceme-production.up.railway.app/api/chat/${adviceId}`, {
+      const res = await fetch(`https://adviceme-production.up.railway.app/api/chat/${adviceId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!text) return;
 
     try {
-      const res = await fetch("adviceme-production.up.railway.app/api/chat/send", {
+      const res = await fetch("https://adviceme-production.up.railway.app/api/chat/send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!otherUsername) return;
 
     try {
-      const profileRes = await fetch(`adviceme-production.up.railway.app/api/profile/view/${otherUsername}`, {
+      const profileRes = await fetch(`https://adviceme-production.up.railway.app/api/profile/view/${otherUsername}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Show badge only if the person is a giver (user_type = 'giver')
       if (data.user_type === 'giver') {
         try {
-          const badgeRes  = await fetch(`adviceme-production.up.railway.app/api/badge/user/${otherUsername}`, {
+          const badgeRes  = await fetch(`https://adviceme-production.up.railway.app/api/badge/user/${otherUsername}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const badgeData = badgeRes.ok ? await badgeRes.json() : null;
@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`adviceme-production.up.railway.app/api/chat/remove/${adviceId}`, {
+      const res = await fetch(`https://adviceme-production.up.railway.app/api/chat/remove/${adviceId}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` }
       });

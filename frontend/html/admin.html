@@ -186,7 +186,7 @@
   const token = localStorage.getItem("adminToken");
   if (!token) window.location.href = "root-access.html";
 
-  const API = "adviceme-production.up.railway.app/api/admin";
+  const API = "https://adviceme-production.up.railway.app/api/admin";
   const headers = { Authorization: `Bearer ${token}` };
   let allUsers = [];
 
