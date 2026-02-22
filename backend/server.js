@@ -13,11 +13,22 @@ const { router: adminRoutes } = require("./routes/admin");
 
 const app = express();
 
-app.use(cors());
+/* ================= CORS ================= */
+app.use(cors({
+  origin: [
+    "https://euphonious-bunny-6005b4.netlify.app", // Netlify frontend
+    "http://localhost:5500",                        // VS Code Live Server
+    "http://127.0.0.1:5500",                        // VS Code Live Server alt
+    "http://localhost:3000"                         // local backend testing
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
 app.use(express.json());
 
 /* ================= REQUEST LOGGING ================= */
-// Logs every incoming request — method, path, status, duration
 app.use((req, res, next) => {
   const start = Date.now();
   res.on("finish", () => {
@@ -52,7 +63,6 @@ app.use((req, res) => {
 });
 
 /* ================= GLOBAL ERROR HANDLER ================= */
-// Catches any error thrown inside a route with next(err)
 app.use((err, req, res, next) => {
   logger.error("Unhandled route error", {
     method:  req.method,
@@ -64,7 +74,6 @@ app.use((err, req, res, next) => {
 });
 
 /* ================= CRASH HANDLERS ================= */
-// Catches async promise rejections that nobody caught (e.g. forgotten await)
 process.on("unhandledRejection", (reason, promise) => {
   logger.error("Unhandled promise rejection", {
     reason: reason?.message || String(reason),
@@ -72,13 +81,11 @@ process.on("unhandledRejection", (reason, promise) => {
   });
 });
 
-// Catches synchronous exceptions that escaped all try/catch
 process.on("uncaughtException", (err) => {
   logger.error("Uncaught exception — server will exit", {
     error: err.message,
     stack: err.stack
   });
-  // Give logger time to flush, then exit so process manager can restart
   setTimeout(() => process.exit(1), 500);
 });
 
