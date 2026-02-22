@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const res = await fetch("http://localhost:3000/api/profile/me", {
+    const res = await fetch("adviceme-production.up.railway.app/api/profile/me", {
       headers: { Authorization: `Bearer ${token}` }
     });
 
@@ -120,7 +120,7 @@ form.addEventListener("submit", async (e) => {
   if (file) formData.append("profilePic", file);
 
   try {
-    const res = await fetch("http://localhost:3000/api/profile/create", {
+    const res = await fetch("adviceme-production.up.railway.app/api/profile/create", {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: formData

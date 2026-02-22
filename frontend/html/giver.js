@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= LOAD GIVER STATS ================= */
   async function loadStats() {
     try {
-      const res  = await fetch("http://localhost:3000/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } });
+      const res  = await fetch("adviceme-production.up.railway.app/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       const statResponded = document.getElementById("statResponded");
       const statBadge     = document.getElementById("statBadge");
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const res  = await fetch(
-        `http://localhost:3000/api/requests/category/${encodeURIComponent(category)}`,
+        `adviceme-production.up.railway.app/api/requests/category/${encodeURIComponent(category)}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
   removeBtn.onclick = async () => {
     if (!activePerson) return;
     await fetch(
-      `http://localhost:3000/api/requests/remove/${activePerson.dataset.track}`,
+      `adviceme-production.up.railway.app/api/requests/remove/${activePerson.dataset.track}`,
       { method: "PUT", headers: { Authorization: `Bearer ${token}` } }
     );
     activePerson.remove();
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     respondBtn.innerHTML = `<span>Sending...</span>`;
 
     try {
-      const res = await fetch("http://localhost:3000/api/advice/respond", {
+      const res = await fetch("adviceme-production.up.railway.app/api/advice/respond", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -225,8 +225,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const [profileRes, badgeRes] = await Promise.all([
-        fetch("http://localhost:3000/api/profile/me",      { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("http://localhost:3000/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } })
+        fetch("adviceme-production.up.railway.app/api/profile/me",      { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("adviceme-production.up.railway.app/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       const data      = await profileRes.json();
@@ -326,7 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
       formData.append("bio",       newBio);
       formData.append("expertise", newExpertise);
       if (newImageFile) formData.append("profilePic", newImageFile);
-      const resUpdate = await fetch("http://localhost:3000/api/profile/update", {
+      const resUpdate = await fetch("adviceme-production.up.railway.app/api/profile/update", {
         method: "PUT", headers: { Authorization: `Bearer ${token}` }, body: formData
       });
       const updateData = await resUpdate.json();
@@ -343,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
     badgeValue.innerHTML = `<p style="text-align:center; opacity:0.6; padding:20px;">Loading...</p>`;
 
     try {
-      const res  = await fetch("http://localhost:3000/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } });
+      const res  = await fetch("adviceme-production.up.railway.app/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
 
       const allLevels = [
@@ -395,7 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (chatBtn) {
     chatBtn.onclick = async () => {
       try {
-        const res   = await fetch("http://localhost:3000/api/chat/list", { headers: { Authorization: `Bearer ${token}` } });
+        const res   = await fetch("adviceme-production.up.railway.app/api/chat/list", { headers: { Authorization: `Bearer ${token}` } });
         const chats = await res.json();
         if (!chats.length) { alert("No active chats yet."); return; }
         window.location.href = `chat.html?adviceId=${chats[0].advice_id}`;

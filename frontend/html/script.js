@@ -1,5 +1,5 @@
 const container  = document.getElementById('container');
-const API        = "http://localhost:3000/api/auth";
+const API        = "adviceme-production.up.railway.app/api/auth";
 
 /* ========== PANEL TOGGLE ========== */
 document.getElementById('goSignUp').onclick = () => container.classList.add("active");
