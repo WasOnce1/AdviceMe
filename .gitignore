@@ -1,0 +1,11 @@
+# Environment variables — never commit these
+backend/.env
+.env
+
+# Node modules — too large, not needed on GitHub
+node_modules/
+backend/node_modules/
+
+# OS junk files
+.DS_Store
+Thumbs.db

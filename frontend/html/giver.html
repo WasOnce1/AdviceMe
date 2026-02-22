@@ -1,58 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advice Giver</title>
-    <link rel="stylesheet" href="giver.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AdviceMe · Give Advice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="giver.css"/>
 </head>
 <body>
 
-<div class="brand">AdviceMe</div>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
 
-<main class="container">
+<!-- TOP BAR -->
+<header class="top-bar">
+  <div class="brand">AdviceMe</div>
+  <nav class="nav-actions">
+    <button class="nav-btn" id="chatBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Chat
+    </button>
+    <button class="nav-btn" id="badgeBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Badge
+    </button>
+    <button class="nav-btn nav-btn-primary" id="viewProfileBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </button>
+  </nav>
+</header>
 
-    <!-- CARD 1: CATEGORY -->
-    <section class="glass-card" id="categorySection">
-        <h1>Choose a Category</h1>
-        <p>Help people who need guidance ✨</p>
+<!-- MAIN -->
+<main class="dashboard">
 
+  <!-- LEFT: Category Selector -->
+  <section class="panel category-panel">
+    <div class="panel-header">
+      <span class="panel-tag">Make a Difference</span>
+      <h2>Give <em>Advice</em></h2>
+      <p>Choose a category below and browse people waiting for your guidance.</p>
+    </div>
+
+    <div class="category-form">
+      <label class="field-label">Select Category</label>
+      <div class="select-wrap">
+        <svg class="sel-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
         <select id="category">
-            <option value="">Select Category</option>
-            <option value="career">Career</option>
-            <option value="finance">Finance</option>
-            <option value="relationship">Relationship</option>
-            <option value="mental">Mental Health</option>
+          <option value="" disabled selected>Choose a category</option>
+          <optgroup label="Mind & Wellbeing">
+            <option value="mental health">🧠 Mental Health</option>
+            <option value="anxiety & stress">😰 Anxiety & Stress</option>
+            <option value="grief & loss">🕊️ Grief & Loss</option>
+            <option value="self confidence">💪 Self Confidence</option>
+          </optgroup>
+          <optgroup label="Life & Relationships">
+            <option value="relationships">❤️ Relationships</option>
+            <option value="family">👨‍👩‍👧 Family</option>
+            <option value="friendship">🤝 Friendship</option>
+            <option value="breakup & divorce">💔 Breakup & Divorce</option>
+            <option value="parenting">👶 Parenting</option>
+          </optgroup>
+          <optgroup label="Career & Finance">
+            <option value="career">💼 Career</option>
+            <option value="finance">💰 Finance</option>
+            <option value="entrepreneurship">🚀 Entrepreneurship</option>
+            <option value="education">🎓 Education</option>
+          </optgroup>
+          <optgroup label="Lifestyle & Growth">
+            <option value="life">🌱 Life & Purpose</option>
+            <option value="health & fitness">🏃 Health & Fitness</option>
+            <option value="spirituality">🙏 Spirituality</option>
+            <option value="astrology">⭐ Astrology</option>
+            <option value="creativity">🎨 Creativity & Passion</option>
+            <option value="travel & adventure">✈️ Travel & Adventure</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="others">💬 Others</option>
+          </optgroup>
         </select>
+      </div>
 
-        <button id="showPeople">Show People</button>
-    </section>
+      <button class="btn-find" id="showPeople">
+        <span id="findTxt">Browse Queue</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
 
-    <!-- CARD 2: PEOPLE QUEUE -->
-    <section class="glass-card hidden" id="peopleSection">
-        <h2>People in Queue</h2>
+      <!-- Inspirational quote -->
+      <div class="inspire-box">
+        <span class="inspire-mark">"</span>
+        <p>One conversation at the right time can change someone's entire trajectory.</p>
+      </div>
+    </div>
 
-        <div class="people-list">
-            <div class="person" onclick="openChat()">
-                <span class="badge">Anonymous</span>
-                <p>I feel lost in my career and scared of taking risks.</p>
-            </div>
+    <!-- Stats strip -->
+    <div class="giver-stats">
+      <div class="gstat">
+        <span id="statResponded">—</span>
+        <small>Responses given</small>
+      </div>
+      <div class="gstat-div"></div>
+      <div class="gstat">
+        <span id="statBadge">🌱</span>
+        <small>Current badge</small>
+      </div>
+    </div>
+  </section>
 
-            <div class="person" onclick="openChat()">
-                <span class="badge">User_4521</span>
-                <p>I am confused about switching my job.</p>
-            </div>
-        </div>
-    </section>
+  <!-- RIGHT: People Queue -->
+  <section class="panel queue-panel">
+    <div class="panel-header">
+      <span class="panel-tag">Waiting for Help</span>
+      <h2>People in <em>Queue</em></h2>
+      <p id="queueSubtitle">Select a category and click Browse to see requests.</p>
+    </div>
 
-    <!-- CHAT -->
-    <section class="glass-card hidden" id="chatBox">
-        <h3>Give Your Advice</h3>
-        <textarea placeholder="Type your advice here..."></textarea>
-        <button>Send Advice</button>
-    </section>
+    <div class="queue-list" id="peopleSection">
+      <div class="empty-queue" id="emptyQueue">
+        <div class="eq-icon">🔍</div>
+        <p>No requests loaded yet</p>
+        <span>Choose a category on the left to find people who need your advice.</span>
+      </div>
+    </div>
+  </section>
 
 </main>
+
+<!-- RESPONSE MODAL -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal-box response-modal">
+    <button class="modal-close" id="closeModal">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-tag">Their Request</div>
+    <div class="request-bubble" id="userMessage"></div>
+
+    <div class="response-field">
+      <label class="field-label">Your Advice</label>
+      <textarea id="responseText" placeholder="Share your genuine thoughts, guidance, and perspective. Be honest, be kind."></textarea>
+      <div class="char-pill"><span id="respCharCount">0</span> / 600</div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="removeBtn" class="btn-skip">Skip</button>
+      <button id="respondBtn" class="btn-respond">
+        Send Advice
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div class="modal-msg" id="modalMsg"></div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay hidden" id="profileModal">
+  <div class="modal-box profile-modal-box">
+    <button class="modal-close" id="closeProfile">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="profile-content"></div>
+  </div>
+</div>
+
+<!-- BADGE MODAL -->
+<div class="modal-overlay hidden" id="badgeModal">
+  <div class="modal-box badge-modal-box">
+    <button class="modal-close" id="closeBadge">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div id="badgeValue"></div>
+  </div>
+</div>
 
 <script src="giver.js"></script>
 </body>

@@ -1,77 +1,1001 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Advisory Platform | Login</title>
-</head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AdviceMe — You're Not Alone</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple-deep:   #0d0118;
+      --purple-mid:    #1a0535;
+      --purple-glow:   #4a0080;
+      --pink:          #e6008d;
+      --pink-soft:     #ff2bd6;
+      --pink-pale:     #ffb3f0;
+      --white:         #ffffff;
+      --white-dim:     rgba(255,255,255,0.6);
+      --white-faint:   rgba(255,255,255,0.08);
+    }
 
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--purple-deep);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ===================== NOISE OVERLAY ===================== */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ===================== ANIMATED BACKGROUND ORBS ===================== */
+    .bg-orbs {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      animation: orbFloat linear infinite;
+    }
+
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(74,0,128,0.5), transparent 70%);
+      top: -200px; left: -150px;
+      animation-duration: 20s;
+    }
+
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(230,0,141,0.2), transparent 70%);
+      top: 30%; right: -150px;
+      animation-duration: 25s;
+      animation-delay: -8s;
+    }
+
+    .orb-3 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(255,43,214,0.15), transparent 70%);
+      bottom: 10%; left: 20%;
+      animation-duration: 18s;
+      animation-delay: -4s;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translateY(0) scale(1); }
+      33% { transform: translateY(-30px) scale(1.05); }
+      66% { transform: translateY(20px) scale(0.97); }
+    }
+
+    /* ===================== NAV ===================== */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 22px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(13,1,24,0.9), transparent);
+    }
+
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #fff 30%, #ffb3f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--white-dim);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover { color: var(--white); }
+
+    .nav-cta {
+      padding: 10px 24px;
+      border-radius: 30px;
+      border: 1px solid rgba(255,43,214,0.5);
+      background: rgba(255,43,214,0.08);
+      color: var(--pink-soft) !important;
+      font-weight: 500 !important;
+      transition: all 0.3s !important;
+    }
+
+    .nav-cta:hover {
+      background: rgba(255,43,214,0.2) !important;
+      border-color: var(--pink-soft) !important;
+      color: #fff !important;
+    }
+
+    /* ===================== HERO ===================== */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 40px 80px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,43,214,0.1);
+      border: 1px solid rgba(255,43,214,0.25);
+      border-radius: 30px;
+      padding: 7px 18px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--pink-pale);
+      margin-bottom: 36px;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .hero-eyebrow .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--pink-soft);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(52px, 8vw, 110px);
+      font-weight: 300;
+      line-height: 1.0;
+      letter-spacing: -1px;
+      margin-bottom: 10px;
+      animation: fadeUp 0.9s 0.1s ease both;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      background: linear-gradient(135deg, #ff2bd6, #e6008d, #ff8fd4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-title-line2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(52px, 8vw, 110px);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -1px;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 32px;
+      animation: fadeUp 0.9s 0.2s ease both;
+    }
+
+    .hero-sub {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--white-dim);
+      max-width: 520px;
+      line-height: 1.75;
+      margin-bottom: 52px;
+      font-weight: 300;
+      animation: fadeUp 1s 0.3s ease both;
+    }
+
+    .hero-cta-wrap {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeUp 1s 0.4s ease both;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 17px 42px;
+      border-radius: 50px;
+      border: none;
+      background: linear-gradient(135deg, #ff2bd6, #e6008d);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 20px 50px rgba(230,0,141,0.45);
+      transition: transform 0.3s, box-shadow 0.3s;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 28px 60px rgba(230,0,141,0.6);
+    }
+
+    .btn-primary:active { transform: translateY(-1px); }
+
+    .btn-primary svg {
+      transition: transform 0.3s;
+    }
+
+    .btn-primary:hover svg {
+      transform: translateX(4px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 17px 36px;
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.8);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.35);
+      color: #fff;
+    }
+
+    /* scroll hint */
+    .scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.3);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      animation: fadeUp 1s 0.8s ease both;
+    }
+
+    .scroll-hint .line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, transparent, rgba(255,43,214,0.5));
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.4; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.2); }
+    }
+
+    /* ===================== STATS ROW ===================== */
+    .stats-row {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      padding: 0 40px 100px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      flex: 1;
+      min-width: 180px;
+      max-width: 260px;
+      text-align: center;
+      padding: 40px 30px;
+      border-left: 1px solid rgba(255,255,255,0.06);
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .stat-item:first-child { border-left: none; }
+
+    .stat-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 52px;
+      font-weight: 300;
+      background: linear-gradient(135deg, #fff, #ffb3f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--white-dim);
+      font-weight: 300;
+      line-height: 1.5;
+    }
+
+    /* ===================== SECTION: CRISIS ===================== */
+    .section-crisis {
+      position: relative;
+      z-index: 1;
+      padding: 100px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-tag {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--pink-soft);
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 5vw, 62px);
+      font-weight: 300;
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+
+    .section-title em {
+      font-style: italic;
+      color: var(--pink-pale);
+    }
+
+    .crisis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      margin-top: 60px;
+    }
+
+    .crisis-text p {
+      font-size: 16px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.85;
+      margin-bottom: 20px;
+      font-weight: 300;
+    }
+
+    .crisis-text p strong {
+      color: var(--pink-pale);
+      font-weight: 500;
+    }
+
+    .crisis-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .crisis-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 24px 28px;
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .crisis-card:hover {
+      background: rgba(255,43,214,0.06);
+      border-color: rgba(255,43,214,0.2);
+      transform: translateX(6px);
+    }
+
+    .crisis-card-icon {
+      font-size: 26px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .crisis-card h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #fff;
+    }
+
+    .crisis-card p {
+      font-size: 13px;
+      color: var(--white-dim);
+      line-height: 1.6;
+    }
+
+    /* ===================== SECTION: HOW IT WORKS ===================== */
+    .section-how {
+      position: relative;
+      z-index: 1;
+      padding: 100px 40px;
+      text-align: center;
+    }
+
+    .section-how .section-title {
+      max-width: 600px;
+      margin: 0 auto 70px;
+    }
+
+    .steps-row {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+    }
+
+    .step-card {
+      flex: 1;
+      min-width: 220px;
+      max-width: 280px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 24px;
+      padding: 40px 28px;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s;
+      backdrop-filter: blur(10px);
+    }
+
+    .step-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,43,214,0.6), transparent);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .step-card:hover {
+      background: rgba(255,43,214,0.06);
+      border-color: rgba(255,43,214,0.2);
+      transform: translateY(-6px);
+    }
+
+    .step-card:hover::before { opacity: 1; }
+
+    .step-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 56px;
+      font-weight: 300;
+      color: rgba(255,43,214,0.2);
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+
+    .step-card h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .step-card p {
+      font-size: 13px;
+      color: var(--white-dim);
+      line-height: 1.7;
+    }
+
+    /* ===================== SECTION: QUOTE ===================== */
+    .section-quote {
+      position: relative;
+      z-index: 1;
+      padding: 80px 40px;
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .quote-mark {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 120px;
+      line-height: 0.5;
+      color: rgba(255,43,214,0.15);
+      display: block;
+      margin-bottom: 20px;
+    }
+
+    .quote-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(24px, 4vw, 40px);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.4;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 24px;
+    }
+
+    .quote-author {
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--pink-soft);
+    }
+
+    /* ===================== SECTION: FEATURES ===================== */
+    .section-features {
+      position: relative;
+      z-index: 1;
+      padding: 100px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 60px;
+    }
+
+    .feature-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px;
+      padding: 36px 30px;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      background: rgba(255,43,214,0.05);
+      border-color: rgba(255,43,214,0.18);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 18px;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      color: var(--white-dim);
+      line-height: 1.7;
+    }
+
+    /* ===================== CTA SECTION ===================== */
+    .section-cta {
+      position: relative;
+      z-index: 1;
+      padding: 100px 40px 80px;
+      text-align: center;
+    }
+
+    .cta-box {
+      max-width: 700px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 32px;
+      padding: 70px 60px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center top, rgba(255,43,214,0.1), transparent 60%);
+      pointer-events: none;
+    }
+
+    .cta-box .section-title {
+      margin-bottom: 16px;
+    }
+
+    .cta-box p {
+      font-size: 16px;
+      color: var(--white-dim);
+      margin-bottom: 40px;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ===================== FOOTER ===================== */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 40px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .footer-founded {
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.5px;
+    }
+
+    .footer-founded span {
+      color: var(--pink-pale);
+      font-weight: 500;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: rgba(255,255,255,0.3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: rgba(255,255,255,0.7); }
+
+    /* ===================== ANIMATIONS ===================== */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===================== DIVIDER LINE ===================== */
+    .divider {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--pink), transparent);
+      margin: 20px 0 40px;
+    }
+
+    /* ===================== MOBILE ===================== */
+    @media (max-width: 768px) {
+      nav { padding: 18px 24px; }
+      .nav-links { display: none; }
+
+      .hero { padding: 100px 24px 70px; }
+
+      .crisis-grid { grid-template-columns: 1fr; gap: 40px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps-row { flex-direction: column; align-items: center; }
+
+      .stat-item { border-left: none; border-top: 1px solid rgba(255,255,255,0.06); }
+      .stat-item:first-child { border-top: none; }
+
+      .cta-box { padding: 50px 28px; }
+
+      footer { flex-direction: column; text-align: center; padding: 32px 24px; }
+      .footer-links { justify-content: center; }
+
+      .section-crisis, .section-features, .section-how { padding: 70px 24px; }
+    }
+  </style>
+</head>
 <body>
 
-    <div class="container" id="container">
+<!-- Background Orbs -->
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
 
-        <!-- SIGN UP -->
-        <div class="form-container sign-up">
-            <form>
-                <h1>Create Account</h1>
-                <span>Use your email to register</span>
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">AdviceMe</div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#how">How it Works</a>
+    <a href="login.html" class="nav-cta">Sign In</a>
+  </div>
+</nav>
 
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Password" required>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <div class="dot"></div>
+    Real people · Real guidance · Real change
+  </div>
+  <h1 class="hero-title">You don't have to<br/><em>face it alone</em></h1>
+  <div class="hero-title-line2"></div>
+  <p class="hero-sub">
+    Connect with people who've walked your path. Get honest, human advice on mental health, relationships, career, and life — when you need it most.
+  </p>
+  <div class="hero-cta-wrap">
+    <a href="login.html" class="btn-primary">
+      Let's Get Started
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </a>
+    <a href="#about" class="btn-secondary">Learn More</a>
+  </div>
+  <div class="scroll-hint">
+    <div class="line"></div>
+    Scroll
+  </div>
+</section>
 
-                <!-- USER TYPE -->
-                <select required>
-                    <option value="" disabled selected>User Type</option>
-                    <option value="giver">Advice Giver</option>
-                    <option value="taker">Advice Taker</option>
-                </select>
+<!-- STATS -->
+<div class="stats-row" id="about">
+  <div class="stat-item reveal">
+    <div class="stat-number">1 in 4</div>
+    <div class="stat-label">people worldwide experience a mental health condition each year</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-number">75%</div>
+    <div class="stat-label">never receive any form of treatment or support</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-number">∞</div>
+    <div class="stat-label">potential for healing when someone truly listens</div>
+  </div>
+</div>
 
-                <!-- USER PREFERENCE -->
-                <select required>
-                    <option value="" disabled selected>Profile Preference</option>
-                    <option value="anonymous">Anonymous</option>
-                    <option value="non_anonymous">Non-Anonymous</option>
-                </select>
+<!-- CRISIS SECTION -->
+<section class="section-crisis">
+  <div class="reveal">
+    <span class="section-tag">The Reality</span>
+    <h2 class="section-title">Mental health is a<br/><em>silent crisis</em></h2>
+    <div class="divider"></div>
+  </div>
 
-                <button type="submit">Sign Up</button>
-            </form>
-        </div>
-
-        <!-- SIGN IN -->
-        <div class="form-container sign-in">
-            <form>
-                <h1>Sign In</h1>
-                <span>Use your email and password</span>
-
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Password" required>
-
-                <a href="#">Forgot your password?</a>
-                <button type="submit">Sign In</button>
-            </form>
-        </div>
-
-        <!-- TOGGLE -->
-        <div class="toggle-container">
-            <div class="toggle">
-                <div class="toggle-panel toggle-left">
-                    <h1>Welcome Back!</h1>
-                    <p>Login to continue helping or getting advice</p>
-                    <button class="hidden" id="login">Sign In</button>
-                </div>
-                <div class="toggle-panel toggle-right">
-                    <h1>Hello!</h1>
-                    <p>Create an account to start your advisory journey</p>
-                    <button class="hidden" id="register">Sign Up</button>
-                </div>
-            </div>
-        </div>
-
+  <div class="crisis-grid">
+    <div class="crisis-text reveal">
+      <p>
+        Every day, <strong>millions of people wake up feeling lost</strong> — weighed down by anxiety, loneliness, grief, or confusion they cannot name. They smile through meetings, answer messages, and keep moving. But inside, something is breaking.
+      </p>
+      <p>
+        The hardest part isn't the pain itself — it's feeling like <strong>no one around you truly understands</strong>. Therapy is expensive. Friends get tired. Family doesn't always know what to say.
+      </p>
+      <p>
+        Mental health struggles don't announce themselves. They creep in quietly — in the 3am thoughts, the dread of mornings, the slow withdrawal from life. And far too often, people suffer in silence because they don't know where to turn.
+      </p>
+      <p>
+        <strong>AdviceMe was built for exactly this moment.</strong>
+      </p>
     </div>
 
-    <script src="script.js"></script>
-</body>
+    <div class="crisis-cards reveal">
+      <div class="crisis-card">
+        <div class="crisis-card-icon">😶‍🌫️</div>
+        <div>
+          <h4>Isolation & Loneliness</h4>
+          <p>Modern life makes it easier than ever to be constantly connected — and deeply, quietly alone.</p>
+        </div>
+      </div>
+      <div class="crisis-card">
+        <div class="crisis-card-icon">💸</div>
+        <div>
+          <h4>Therapy is Out of Reach</h4>
+          <p>Professional help costs hundreds per session. Most people cannot afford ongoing care when they need it.</p>
+        </div>
+      </div>
+      <div class="crisis-card">
+        <div class="crisis-card-icon">🧱</div>
+        <div>
+          <h4>The Stigma Wall</h4>
+          <p>Shame and judgment keep people from asking for help, even from those closest to them.</p>
+        </div>
+      </div>
+      <div class="crisis-card">
+        <div class="crisis-card-icon">🌀</div>
+        <div>
+          <h4>No One to Talk To</h4>
+          <p>When you're in the dark, finding someone who truly gets it — without judgment — feels impossible.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
+<!-- QUOTE -->
+<div class="section-quote reveal">
+  <span class="quote-mark">"</span>
+  <p class="quote-text">Sometimes all a person needs is a hand to hold and a heart to understand.</p>
+  <div class="quote-author">— The AdviceMe Promise</div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section-how" id="how">
+  <div class="reveal">
+    <span class="section-tag">How It Works</span>
+    <h2 class="section-title">Simple, safe,<br/><em>human-first</em></h2>
+  </div>
+
+  <div class="steps-row">
+    <div class="step-card reveal">
+      <div class="step-number">01</div>
+      <h3>Share Your Story</h3>
+      <p>Post your situation anonymously or openly. No judgment. No pressure. Just your truth, in your words.</p>
+    </div>
+    <div class="step-card reveal">
+      <div class="step-number">02</div>
+      <h3>Get Matched</h3>
+      <p>Experienced advisors with lived experience in your category see your request and choose to respond.</p>
+    </div>
+    <div class="step-card reveal">
+      <div class="step-number">03</div>
+      <h3>Real Conversation</h3>
+      <p>Chat openly in a private, secure space. Continue as long as you need — no time limits, no rush.</p>
+    </div>
+    <div class="step-card reveal">
+      <div class="step-number">04</div>
+      <h3>Feel Less Alone</h3>
+      <p>Walk away with perspective, clarity, and the knowledge that someone truly listened.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section-features">
+  <div class="reveal">
+    <span class="section-tag">What We Offer</span>
+    <h2 class="section-title">Built around<br/><em>you</em></h2>
+    <div class="divider"></div>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <span class="feature-icon">🔒</span>
+      <h3>Anonymous Mode</h3>
+      <p>Share openly without revealing who you are. Your identity stays yours — always.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-icon">🧠</span>
+      <h3>Mental Health Focus</h3>
+      <p>Designed for the moments when life feels too heavy. We take emotional wellbeing seriously.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-icon">💬</span>
+      <h3>Real-Time Chat</h3>
+      <p>Instant messaging with advisors who chose to be here — because they want to help.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-icon">🏆</span>
+      <h3>Trusted Advisors</h3>
+      <p>Givers earn badges through quality advice. You can see exactly who you're talking to.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-icon">❤️</span>
+      <h3>Multiple Categories</h3>
+      <p>Career, finance, relationships, mental health, and life — support wherever you need it.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-icon">🌱</span>
+      <h3>Free to Use</h3>
+      <p>Good advice shouldn't be gated behind a paywall. AdviceMe is open to everyone.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section-cta">
+  <div class="cta-box reveal">
+    <span class="section-tag">Ready?</span>
+    <h2 class="section-title">Take the first<br/><em>step today</em></h2>
+    <p>You've been carrying this alone long enough. There are people here — real people — who want to listen and help.</p>
+    <a href="login.html" class="btn-primary">
+      Let's Get Started
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">AdviceMe</div>
+  <div class="footer-founded">Founded by <span>Aman Mehta</span> · Built with care, for those who need it most</div>
+  <div class="footer-links">
+    <a href="login.html">Sign In</a>
+    <a href="login.html">Sign Up</a>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Stagger sibling reveals
+  document.querySelectorAll('.steps-row, .features-grid, .crisis-cards, .stats-row').forEach(container => {
+    const children = container.querySelectorAll('.reveal');
+    children.forEach((child, i) => {
+      child.style.transitionDelay = `${i * 0.1}s`;
+    });
+  });
+</script>
+</body>
 </html>

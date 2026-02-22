@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat · AdviceMe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="chat.css" />
+</head>
+<body>
+
+<div class="chat-app">
+
+  <!-- ================= LEFT SIDEBAR ================= -->
+  <div class="chat-list" id="chatListPanel">
+    <div class="chat-list-header">
+      <div class="sidebar-brand">AdviceMe</div>
+      <h2>💬 Conversations</h2>
+      <p class="sidebar-sub">Your active chats</p>
+    </div>
+    <div id="chatList"></div>
+  </div>
+
+  <!-- ================= RIGHT CHAT WINDOW ================= -->
+  <div class="chat-window hidden" id="chatWindow">
+
+    <!-- Chat Header -->
+    <div class="chat-header" id="chatHeader">
+      <button class="back-btn" id="backBtn">←</button>
+      <div class="header-avatar-wrap">
+        <img id="chatAvatar" src="images/default.png" class="header-avatar" />
+        <span class="online-dot"></span>
+      </div>
+      <div class="header-info">
+        <span id="chatUsername" class="header-name"></span>
+        <small class="header-hint">tap to view profile</small>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chatMessages">
+      <div class="messages-start-label">Start of conversation</div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input">
+      <input type="text" id="messageInput" placeholder="Write something kind..." />
+      <button id="sendBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Empty State -->
+  <div class="chat-empty" id="emptyState">
+    <div class="empty-illustration">💬</div>
+    <h3>No chat selected</h3>
+    <p>Choose a conversation from the left to get started</p>
+  </div>
+
+</div>
+
+<!-- ================= PROFILE POPUP MODAL ================= -->
+<div class="profile-overlay hidden" id="profileOverlay">
+  <div class="profile-popup">
+    <button class="popup-close-btn" id="closePopup">&times;</button>
+
+    <div class="popup-avatar-wrap">
+      <img id="popupImg" src="images/default.png" class="popup-avatar" title="Click to enlarge" />
+    </div>
+
+    <h3 id="popupUsername"></h3>
+    <div id="popupBadge" class="popup-badge-row"></div>
+    <p id="popupExpertise" class="popup-expertise"></p>
+    <p id="popupBio" class="popup-bio"></p>
+
+    <button id="removeRecipientBtn">🚫 Remove from Chat</button>
+  </div>
+</div>
+
+<!-- ================= ENLARGED IMAGE OVERLAY ================= -->
+<div class="enlarge-overlay hidden" id="enlargeOverlay">
+  <img id="enlargedImg" src="" />
+</div>
+
+<script src="chat.js"></script>
+</body>
+</html>

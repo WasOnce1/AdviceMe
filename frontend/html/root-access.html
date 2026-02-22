@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>System Access</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green: #00ff88;
+      --green-dim: #00ff8844;
+      --green-glow: #00ff8820;
+      --red: #ff3355;
+      --bg: #020c06;
+      --panel: #040f08;
+      --border: #00ff8830;
+      --text: #00cc66;
+      --text-dim: #006633;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Share Tech Mono', monospace;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridMove 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(40px); }
+    }
+
+    /* Scanline effect */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.15) 2px,
+        rgba(0,0,0,0.15) 4px
+      );
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Floating particles */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: float linear infinite;
+      opacity: 0;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-100px) translateX(30px); opacity: 0; }
+    }
+
+    /* Main container */
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 440px;
+    }
+
+    /* Top header bar */
+    .sys-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+
+    .sys-header .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    .sys-header span {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .sys-header .line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Main panel */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 40px;
+      position: relative;
+      box-shadow:
+        0 0 40px rgba(0,255,136,0.05),
+        0 0 80px rgba(0,255,136,0.03),
+        inset 0 0 30px rgba(0,255,136,0.02);
+    }
+
+    /* Corner decorations */
+    .panel::before,
+    .panel::after {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+    }
+    .panel::before {
+      top: -1px; left: -1px;
+      border-top: 2px solid var(--green);
+      border-left: 2px solid var(--green);
+      box-shadow: -2px -2px 8px rgba(0,255,136,0.3);
+    }
+    .panel::after {
+      bottom: -1px; right: -1px;
+      border-bottom: 2px solid var(--green);
+      border-right: 2px solid var(--green);
+      box-shadow: 2px 2px 8px rgba(0,255,136,0.3);
+    }
+
+    /* Logo area */
+    .logo-area {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .logo-icon {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 0 10px rgba(0,255,136,0.5));
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { filter: drop-shadow(0 0 10px rgba(0,255,136,0.5)); }
+      50% { filter: drop-shadow(0 0 20px rgba(0,255,136,0.8)); }
+    }
+
+    .logo-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 4px;
+      margin-top: 6px;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0 -40px 30px;
+    }
+
+    /* Form fields */
+    .field {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .field-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .field-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .field-prefix {
+      position: absolute;
+      left: 14px;
+      color: var(--green);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .field input {
+      width: 100%;
+      background: rgba(0,255,136,0.03);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 12px 14px 12px 36px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      color: var(--green);
+      outline: none;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+    }
+
+    .field input::placeholder {
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    .field input:focus {
+      border-color: var(--green);
+      background: rgba(0,255,136,0.06);
+      box-shadow: 0 0 15px rgba(0,255,136,0.1), inset 0 0 10px rgba(0,255,136,0.03);
+    }
+
+    /* Typing cursor effect on focus */
+    .field input:focus::after {
+      content: '_';
+      animation: cursor 1s step-end infinite;
+    }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      border: 1px solid var(--green);
+      border-radius: 3px;
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-top: 10px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0,255,136,0.1), transparent);
+      transition: left 0.4s ease;
+    }
+
+    .submit-btn:hover {
+      background: rgba(0,255,136,0.08);
+      box-shadow: 0 0 20px rgba(0,255,136,0.2);
+      letter-spacing: 6px;
+    }
+
+    .submit-btn:hover::before {
+      left: 100%;
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    .submit-btn.loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    /* Error message */
+    .error-msg {
+      margin-top: 15px;
+      padding: 10px 14px;
+      border: 1px solid rgba(255,51,85,0.3);
+      border-radius: 3px;
+      background: rgba(255,51,85,0.05);
+      color: var(--red);
+      font-size: 12px;
+      letter-spacing: 1px;
+      display: none;
+      animation: glitch 0.3s ease;
+    }
+
+    @keyframes glitch {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+
+    .error-msg.show { display: block; }
+
+    /* Footer */
+    .panel-footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-footer span {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    /* Terminal typing animation */
+    .typing-text {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      margin-bottom: 25px;
+      min-height: 16px;
+    }
+
+    .typing-text .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 12px;
+      background: var(--green);
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="container">
+
+  <div class="sys-header">
+    <div class="dot"></div>
+    <span>Secure Terminal</span>
+    <div class="line"></div>
+    <span>v2.4.1</span>
+  </div>
+
+  <div class="panel">
+
+    <div class="logo-area">
+      <span class="logo-icon">⬡</span>
+      <div class="logo-title">AdviceMe</div>
+      <div class="logo-sub">Root Access Portal</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="typing-text" id="typingText"><span class="cursor"></span></div>
+
+    <div class="field">
+      <label class="field-label">Identifier</label>
+      <div class="field-wrap">
+        <span class="field-prefix">›</span>
+        <input type="text" id="username" placeholder="enter admin username" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Auth Key</label>
+      <div class="field-wrap">
+        <span class="field-prefix">›</span>
+        <input type="password" id="password" placeholder="enter password" />
+      </div>
+    </div>
+
+    <button class="submit-btn" id="loginBtn" onclick="adminLogin()">
+      [ AUTHENTICATE ]
+    </button>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="panel-footer">
+      <span>ADVICEME SYS</span>
+      <div class="status-indicator">
+        <div class="status-dot"></div>
+        <span>ONLINE</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  /* ===== PARTICLES ===== */
+  const container = document.getElementById("particles");
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement("div");
+    p.className = "particle";
+    p.style.left = Math.random() * 100 + "vw";
+    p.style.animationDuration = (8 + Math.random() * 15) + "s";
+    p.style.animationDelay = (Math.random() * 10) + "s";
+    p.style.width = p.style.height = (Math.random() > 0.5 ? 2 : 3) + "px";
+    container.appendChild(p);
+  }
+
+  /* ===== TYPING EFFECT ===== */
+  const messages = [
+    "initializing secure connection...",
+    "encryption protocol: AES-256",
+    "awaiting credentials..."
+  ];
+  let msgIndex = 0;
+  let charIndex = 0;
+  const typingEl = document.getElementById("typingText");
+
+  function type() {
+    const msg = messages[msgIndex];
+    if (charIndex <= msg.length) {
+      typingEl.innerHTML = msg.substring(0, charIndex) + '<span class="cursor"></span>';
+      charIndex++;
+      setTimeout(type, 50);
+    } else {
+      setTimeout(() => {
+        msgIndex = (msgIndex + 1) % messages.length;
+        charIndex = 0;
+        type();
+      }, 2500);
+    }
+  }
+  type();
+
+  /* ===== ENTER KEY ===== */
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") adminLogin();
+  });
+
+  /* ===== ADMIN LOGIN ===== */
+  async function adminLogin() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const btn      = document.getElementById("loginBtn");
+    const errorMsg = document.getElementById("errorMsg");
+
+    if (!username || !password) {
+      showError("// credentials required");
+      return;
+    }
+
+    btn.classList.add("loading");
+    btn.innerText = "[ AUTHENTICATING... ]";
+    errorMsg.classList.remove("show");
+
+    try {
+      const res = await fetch("http://localhost:3000/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError("// access denied: " + (data.message || "invalid credentials"));
+        btn.classList.remove("loading");
+        btn.innerText = "[ AUTHENTICATE ]";
+        return;
+      }
+
+      localStorage.setItem("adminToken", data.token);
+      btn.innerText = "[ ACCESS GRANTED ]";
+      btn.style.borderColor = "#00ff88";
+      btn.style.color = "#00ff88";
+
+      setTimeout(() => {
+        window.location.href = "admin.html";
+      }, 800);
+
+    } catch (err) {
+      showError("// connection error: server unreachable");
+      btn.classList.remove("loading");
+      btn.innerText = "[ AUTHENTICATE ]";
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById("errorMsg");
+    el.innerText = msg;
+    el.classList.add("show");
+  }
+</script>
+</body>
+</html>

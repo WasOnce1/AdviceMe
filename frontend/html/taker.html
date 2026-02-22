@@ -1,58 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advice Taker Dashboard</title>
-    <link rel="stylesheet" href="taker.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AdviceMe · Your Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="taker.css"/>
 </head>
 <body>
 
-    <!-- Top Navbar -->
-    <nav class="navbar">
-        <h2>AdviseMe</h2>
-    </nav>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
 
-    <!-- Main Container -->
-    <div class="dashboard">
+<!-- TOP BAR -->
+<header class="top-bar">
+  <div class="brand">AdviceMe</div>
+  <nav class="nav-actions">
+    <button class="nav-btn" id="chatBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Chat
+    </button>
+    <button class="nav-btn nav-btn-primary" id="viewProfileBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </button>
+  </nav>
+</header>
 
-        <!-- Left Panel -->
-        <div class="card request-card">
-            <h3>Ask for Advice</h3>
+<!-- MAIN DASHBOARD -->
+<main class="dashboard">
 
-            <select>
-                <option disabled selected>Select Category</option>
-                <option>Career</option>
-                <option>Relationships</option>
-                <option>Mental Health</option>
-                <option>Finance</option>
-                <option>Life</option>
-            </select>
-
-            <select>
-                <option disabled selected>Urgency Level</option>
-                <option>Low</option>
-                <option>Medium</option>
-                <option>High</option>
-            </select>
-
-            <textarea placeholder="Describe your situation..."></textarea>
-
-            <button class="primary-btn">Submit Request</button>
-        </div>
-
-        <!-- Right Panel -->
-        <div class="card chat-card">
-            <h3>Your Conversations</h3>
-
-            <div class="empty-chat">
-                <p>No advice yet 💬</p>
-                <span>Once someone responds, it will appear here.</span>
-            </div>
-        </div>
-
+  <!-- LEFT: Ask for Advice -->
+  <section class="panel request-panel">
+    <div class="panel-header">
+      <span class="panel-tag">Get Help</span>
+      <h2>Ask for <em>Advice</em></h2>
+      <p>Share what you're going through. Someone who understands is ready to listen.</p>
     </div>
+
+    <!-- FORM STATE -->
+    <div class="request-form request-card" id="requestFormWrap">
+      <div class="field-group">
+        <label class="field-label">Category</label>
+        <div class="select-wrap">
+          <svg class="sel-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+          <select id="category">
+            <option disabled selected value="">Choose a category</option>
+            <optgroup label="Mind & Wellbeing">
+              <option value="mental health">🧠 Mental Health</option>
+              <option value="anxiety & stress">😰 Anxiety & Stress</option>
+              <option value="grief & loss">🕊️ Grief & Loss</option>
+              <option value="self confidence">💪 Self Confidence</option>
+            </optgroup>
+            <optgroup label="Life & Relationships">
+              <option value="relationships">❤️ Relationships</option>
+              <option value="family">👨‍👩‍👧 Family</option>
+              <option value="friendship">🤝 Friendship</option>
+              <option value="breakup & divorce">💔 Breakup & Divorce</option>
+              <option value="parenting">👶 Parenting</option>
+            </optgroup>
+            <optgroup label="Career & Finance">
+              <option value="career">💼 Career</option>
+              <option value="finance">💰 Finance</option>
+              <option value="entrepreneurship">🚀 Entrepreneurship</option>
+              <option value="education">🎓 Education</option>
+            </optgroup>
+            <optgroup label="Lifestyle & Growth">
+              <option value="life">🌱 Life & Purpose</option>
+              <option value="health & fitness">🏃 Health & Fitness</option>
+              <option value="spirituality">🙏 Spirituality</option>
+              <option value="astrology">⭐ Astrology</option>
+              <option value="creativity">🎨 Creativity & Passion</option>
+              <option value="travel & adventure">✈️ Travel & Adventure</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option value="others">💬 Others</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Urgency</label>
+        <div class="urgency-row">
+          <label class="urgency-chip">
+            <input type="radio" name="urgency" value="low" />
+            <span>🟢 Low</span>
+          </label>
+          <label class="urgency-chip">
+            <input type="radio" name="urgency" value="medium" />
+            <span>🟡 Medium</span>
+          </label>
+          <label class="urgency-chip">
+            <input type="radio" name="urgency" value="high" />
+            <span>🔴 High</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Your Situation</label>
+        <div class="textarea-wrap">
+          <textarea id="requestText" placeholder="Describe what you're going through in as much detail as you're comfortable sharing..."></textarea>
+          <div class="char-pill"><span id="reqCharCount">0</span> / 500</div>
+        </div>
+      </div>
+
+      <button class="btn-submit primary-btn" id="submitRequest">
+        <span id="submitTxt">Send Request</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+
+      <div class="submit-msg" id="submitMsg"></div>
+    </div>
+
+    <!-- COOLDOWN STATE (hidden by default) -->
+    <div class="cooldown-card hidden" id="cooldownWrap">
+      <div class="cooldown-icon">📬</div>
+      <h3 class="cooldown-title">Request Submitted</h3>
+      <p class="cooldown-text">Your request has been forwarded to our advisors. Please allow some time for a response before submitting a new one.</p>
+      <div class="cooldown-timer-wrap">
+        <div class="cooldown-label">Next request available in</div>
+        <div class="cooldown-timer" id="cooldownTimer">30:00</div>
+      </div>
+      <div class="cooldown-bar-wrap">
+        <div class="cooldown-bar" id="cooldownBar"></div>
+      </div>
+      <p class="cooldown-note">This helps ensure every request receives the quality attention it deserves.</p>
+    </div>
+
+  </section>
+
+  <!-- RIGHT: Conversations -->
+  <section class="panel convo-panel">
+    <div class="panel-header">
+      <span class="panel-tag">Responses</span>
+      <h2>Your <em>Conversations</em></h2>
+      <p>Advice received from givers — click any card to take action.</p>
+    </div>
+
+    <div class="convo-list" id="chatContainer">
+      <div class="empty-state">
+        <div class="empty-icon">💭</div>
+        <p>No advice yet</p>
+        <span>Once a giver responds to your request, it will appear here.</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay hidden" id="profilePanel">
+  <div class="modal-box profile-modal-box">
+    <button class="modal-close" id="closeProfile">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div id="profileContent"></div>
+  </div>
+</div>
+
+<!-- ACTION MODAL -->
+<div class="modal-overlay hidden" id="actionModal">
+  <div class="modal-box action-modal-box">
+    <div class="action-icon">💬</div>
+    <h3>What would you like to do?</h3>
+    <p class="action-sub">Choose how you'd like to proceed with this advice.</p>
+    <div class="action-btns">
+      <button id="continueBtn" class="action-btn continue">
+        <span>🚀</span> Continue Chat
+      </button>
+      <button id="endBtn" class="action-btn end">
+        <span>🔚</span> End Conversation
+      </button>
+      <button id="reportBtn" class="action-btn report">
+        <span>🚨</span> Remove & Report
+      </button>
+      <button id="cancelBtn" class="action-btn cancel">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script src="taker.js"></script>
 </body>
