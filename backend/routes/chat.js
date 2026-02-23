@@ -1,13 +1,18 @@
 const express = require("express");
 const db = require("../db");
 const authMiddleware = require("../middleware/authmiddleware");
-const logger = require("../logger"); // ← add this to your backend root
+const logger = require("../logger");
 
 const router = express.Router();
 
+/* ================= HELPER ================= */
+function resolveUsername(req) {
+  return req.user.username?.trim() || `anon_${req.user.id}`;
+}
+
 /* ================= LIST ACTIVE CHATS ================= */
 router.get("/list", authMiddleware, (req, res) => {
-  const username = req.user.username?.trim();
+  const username = resolveUsername(req);
 
   const sql = `
     SELECT 
@@ -51,7 +56,7 @@ router.get("/list", authMiddleware, (req, res) => {
 /* ================= LOAD CHAT ================= */
 router.get("/:adviceId", authMiddleware, (req, res) => {
   const { adviceId } = req.params;
-  const username = req.user.username?.trim();
+  const username = resolveUsername(req);
 
   const chatSql = `
     SELECT 
@@ -82,8 +87,6 @@ router.get("/:adviceId", authMiddleware, (req, res) => {
     const row   = rows[0];
     const giver = row.giver?.trim();
     const taker = row.taker?.trim();
-
-    // ✅ Debug logs removed — no more username/giver/taker/isGiver spam
 
     const isGiver       = username === giver;
     const myUsername    = isGiver ? giver : taker;
@@ -131,12 +134,14 @@ router.post("/send", authMiddleware, (req, res) => {
   if (!adviceId || !message)
     return res.status(400).json({ message: "Missing fields" });
 
+  const username = resolveUsername(req);
+
   const sql = `
     INSERT INTO chat_messages (advice_id, sender, message)
     VALUES (?, ?, ?)
   `;
 
-  db.query(sql, [adviceId, req.user.username?.trim(), message], err => {
+  db.query(sql, [adviceId, username, message], err => {
     if (err) {
       logger.error("Failed to send message", { adviceId, error: err.message });
       return res.status(500).json({ message: "DB error" });
@@ -148,7 +153,7 @@ router.post("/send", authMiddleware, (req, res) => {
 /* ================= REMOVE RECIPIENT ================= */
 router.put("/remove/:adviceId", authMiddleware, (req, res) => {
   const { adviceId } = req.params;
-  const username = req.user.username?.trim();
+  const username = resolveUsername(req);
 
   const checkSql = `
     SELECT ua.id
