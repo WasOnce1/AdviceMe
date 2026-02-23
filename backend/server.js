@@ -16,7 +16,9 @@ const app = express();
 /* ================= CORS ================= */
 app.use(cors({
   origin: [
-    "https://euphonious-bunny-6005b4.netlify.app", // Netlify frontend
+    "https://adviceme.social",                      // custom domain
+    "https://www.adviceme.social",                  // www version
+    "https://euphonious-bunny-6005b4.netlify.app",  // Netlify fallback
     "http://localhost:5500",                        // VS Code Live Server
     "http://127.0.0.1:5500",                        // VS Code Live Server alt
     "http://localhost:3000"                         // local backend testing
