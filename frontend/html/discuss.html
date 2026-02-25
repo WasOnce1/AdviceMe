@@ -48,7 +48,6 @@
     .page-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px, 6vw, 64px); font-weight: 300; line-height: 1.1; margin-bottom: 16px; }
     .page-title em { font-style: italic; background: linear-gradient(135deg, #ff2bd6, #e6008d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
-    /* Active question card */
     .question-card {
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,43,214,0.2);
       border-radius: 24px; padding: 40px; margin-bottom: 32px;
@@ -61,7 +60,6 @@
     .answer-count-tag { font-size: 13px; color: var(--white-dim); }
     .answer-count-tag span { color: var(--pink-pale); font-weight: 600; }
 
-    /* Answer submission */
     .answer-form { margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 24px; }
     .answer-form textarea {
       width: 100%; min-height: 110px; padding: 16px 20px;
@@ -85,7 +83,7 @@
     .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
     .signup-prompt {
       background: rgba(255,43,214,0.06); border: 1px solid rgba(255,43,214,0.2);
-      border-radius: 14px; padding: 20px 24px; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px; padding: 20px 24px; margin-top: 24px;
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
     }
     .signup-prompt p { font-size: 14px; color: var(--white-dim); }
@@ -96,7 +94,6 @@
     .form-msg.success { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2); color: #00ff88; }
     .form-msg.error { background: rgba(255,51,85,0.08); border: 1px solid rgba(255,51,85,0.2); color: #ff3355; }
 
-    /* Answers list */
     .answers-section { margin-top: 40px; }
     .answers-header { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--white-dim); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
     .answers-header::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
@@ -126,13 +123,11 @@
     .like-btn:hover { border-color: rgba(255,43,214,0.4); color: var(--pink-pale); }
     .like-btn.liked { border-color: rgba(255,43,214,0.4); color: var(--pink-soft); background: rgba(255,43,214,0.08); }
 
-    /* No question state */
     .no-question { text-align: center; padding: 80px 40px; }
     .no-question-icon { font-size: 48px; margin-bottom: 20px; }
     .no-question h3 { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; margin-bottom: 12px; color: rgba(255,255,255,0.7); }
     .no-question p { font-size: 15px; color: var(--white-dim); }
 
-    /* Archive section */
     .archive-section { margin-top: 60px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.06); }
     .archive-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; margin-bottom: 8px; }
     .archive-sub { font-size: 14px; color: var(--white-dim); margin-bottom: 28px; }
@@ -149,7 +144,6 @@
     .archive-date { font-size: 11px; color: var(--white-dim); letter-spacing: 1px; margin-top: 2px; }
     .archive-arrow { font-size: 18px; color: rgba(255,255,255,0.2); }
 
-    /* Archive detail view */
     .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--white-dim); font-size: 14px; cursor: pointer; margin-bottom: 32px; transition: color 0.2s; background: none; border: none; padding: 0; }
     .back-btn:hover { color: var(--white); }
 
@@ -182,7 +176,8 @@
   <a href="index.html" class="nav-brand">AdviceMe</a>
   <div class="nav-right">
     <a href="index.html" class="nav-link">Home</a>
-    <a href="login.html" class="nav-cta">Sign In</a>
+    <!-- CHANGED: added ?redirect=discuss so after login user comes back here -->
+    <a href="login.html?redirect=discuss" class="nav-cta">Sign In</a>
   </div>
 </nav>
 
@@ -205,8 +200,9 @@
   <div class="footer-brand">AdviceMe</div>
   <div class="footer-links">
     <a href="index.html">Home</a>
-    <a href="login.html">Sign In</a>
-    <a href="login.html">Sign Up</a>
+    <!-- CHANGED: added ?redirect=discuss -->
+    <a href="login.html?redirect=discuss">Sign In</a>
+    <a href="login.html?redirect=discuss">Sign Up</a>
   </div>
 </footer>
 
@@ -218,7 +214,6 @@
   let currentQuestionId = null;
 
   async function init() {
-    // Get current user if logged in
     if (token) {
       try {
         const res = await fetch("https://api.adviceme.social/api/profile/me", {
@@ -238,7 +233,6 @@
       const { question, answers } = await res.json();
       currentQuestionId = question?.id || null;
 
-      // Get user's likes if logged in
       if (currentUser && question) {
         const lRes = await fetch(`${API}/mylikes/${question.id}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -289,7 +283,8 @@
               </div>`
           : `<div class="signup-prompt">
                 <p>Sign up to share your story and help others.</p>
-                <a href="login.html">Join the Discussion →</a>
+                <!-- CHANGED: added ?redirect=discuss -->
+                <a href="login.html?redirect=discuss">Join the Discussion →</a>
               </div>`
         }
       </div>
@@ -368,12 +363,12 @@
   }
 
   async function toggleLike(answerId, btn) {
-    if (!currentUser) { window.location.href = "login.html"; return; }
+    // CHANGED: redirect to discuss page (not just login.html) if not logged in
+    if (!currentUser) { window.location.href = "login.html?redirect=discuss"; return; }
     const isLiked = btn.classList.contains("liked");
     btn.classList.toggle("liked");
     const countEl = btn.querySelector(".like-count");
     countEl.innerText = isLiked ? parseInt(countEl.innerText) - 1 : parseInt(countEl.innerText) + 1;
-    btn.querySelector("span:first-child") || null;
     btn.innerHTML = `${isLiked ? '♡' : '♥'} <span class="like-count">${countEl.innerText}</span>`;
     if (!isLiked) btn.classList.add("liked"); else btn.classList.remove("liked");
 

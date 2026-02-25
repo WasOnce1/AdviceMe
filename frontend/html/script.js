@@ -1,6 +1,11 @@
 const container  = document.getElementById('container');
 const API        = "https://api.adviceme.social/api/auth";
 
+/* ========== DETECT REDIRECT PARAM ========== */
+// If coming from discuss.html, URL will be: login.html?redirect=discuss
+const urlParams    = new URLSearchParams(window.location.search);
+const redirectTo   = urlParams.get("redirect"); // "discuss" or null
+
 /* ========== PANEL TOGGLE ========== */
 document.getElementById('goSignUp').onclick = () => container.classList.add("active");
 document.getElementById('goSignIn').onclick  = () => container.classList.remove("active");
@@ -16,6 +21,29 @@ function clearMsg(id) {
   const el = document.getElementById(id);
   el.textContent = '';
   el.className = 'msg-box';
+}
+
+/* ========== REDIRECT HELPER ========== */
+function handleRedirect(data) {
+  // Coming from discuss.html — always go back there
+  if (redirectTo === "discuss") {
+    window.location.href = "discuss.html";
+    return;
+  }
+
+  // Normal flow — go to giver/taker dashboard
+  if (data.preference === "anonymous") {
+    window.location.href = data.user_type === "giver" ? "giver.html" : "taker.html";
+    return;
+  }
+
+  if (data.preference === "non_anonymous") {
+    if (data.profile_created === 0) {
+      window.location.href = "create-profile.html";
+    } else {
+      window.location.href = data.user_type === "giver" ? "giver.html" : "taker.html";
+    }
+  }
 }
 
 /* ========== SIGNUP ========== */
@@ -97,19 +125,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
     showMsg('loginMsg', '✅ Welcome back!', 'success');
 
-    setTimeout(() => {
-      if (data.preference === "anonymous") {
-        window.location.href = data.user_type === "giver" ? "giver.html" : "taker.html";
-        return;
-      }
-      if (data.preference === "non_anonymous") {
-        if (data.profile_created === 0) {
-          window.location.href = "create-profile.html";
-        } else {
-          window.location.href = data.user_type === "giver" ? "giver.html" : "taker.html";
-        }
-      }
-    }, 800);
+    setTimeout(() => handleRedirect(data), 800);
 
   } catch {
     showMsg('loginMsg', 'Server error. Please try again.', 'error');
