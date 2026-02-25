@@ -22,6 +22,30 @@ function generateAnonymousUsername(userId) {
   return `anon_${1000 + userId}`;
 }
 
+/* ================= DB ERROR HELPER ================= */
+function handleDbError(err, res) {
+  console.error("DB ERROR:", err);
+
+  // Duplicate entry — username or user_id already exists
+  if (err.code === "ER_DUP_ENTRY") {
+    if (err.message.includes("username")) {
+      return res.status(409).json({ message: "This username is already taken. Please choose a different one." });
+    }
+    if (err.message.includes("user_id")) {
+      return res.status(409).json({ message: "You already have a profile. Please log in again." });
+    }
+    return res.status(409).json({ message: "Duplicate entry — this value already exists." });
+  }
+
+  // Column not found / bad field
+  if (err.code === "ER_BAD_FIELD_ERROR") {
+    return res.status(500).json({ message: "Internal error: bad database field." });
+  }
+
+  // Generic fallback
+  return res.status(500).json({ message: "Something went wrong. Please try again." });
+}
+
 /* ================= CREATE PROFILE ================= */
 router.post("/create", upload.single("profilePic"), (req, res) => {
   try {
@@ -37,15 +61,15 @@ router.post("/create", upload.single("profilePic"), (req, res) => {
       "SELECT id FROM profiles WHERE user_id = ?",
       [userId],
       (err, rows) => {
-        if (err) return res.status(500).json({ message: "DB error" });
-        if (rows.length) return res.status(409).json({ message: "Profile already exists" });
+        if (err) return handleDbError(err, res);
+        if (rows.length) return res.status(409).json({ message: "You already have a profile. Please log in again." });
 
         db.query(
           "SELECT preference FROM users WHERE id = ?",
           [userId],
           (err, userRows) => {
-            if (err) return res.status(500).json({ message: "User fetch error" });
-            if (!userRows.length) return res.status(404).json({ message: "User not found" });
+            if (err) return handleDbError(err, res);
+            if (!userRows.length) return res.status(404).json({ message: "User not found. Please sign up again." });
 
             const { preference } = userRows[0];
 
@@ -58,16 +82,25 @@ router.post("/create", upload.single("profilePic"), (req, res) => {
               return res.status(400).json({ message: "Username is required" });
             }
 
+            // Check if username is already taken before trying to insert
             db.query(
-              `INSERT INTO profiles (user_id, username, bio, expertise, profile_image_url)
-               VALUES (?, ?, ?, ?, ?)`,
-              [userId, finalUsername, bio, expertise, profileImageUrl],
-              (err) => {
-                if (err) {
-                  console.error("PROFILE INSERT ERROR:", err);
-                  return res.status(500).json({ message: "Profile creation failed" });
+              "SELECT id FROM profiles WHERE username = ?",
+              [finalUsername],
+              (err, usernameRows) => {
+                if (err) return handleDbError(err, res);
+                if (usernameRows.length) {
+                  return res.status(409).json({ message: "This username is already taken. Please choose a different one." });
                 }
-                res.json({ message: "Profile created successfully" });
+
+                db.query(
+                  `INSERT INTO profiles (user_id, username, bio, expertise, profile_image_url)
+                   VALUES (?, ?, ?, ?, ?)`,
+                  [userId, finalUsername, bio, expertise, profileImageUrl],
+                  (err) => {
+                    if (err) return handleDbError(err, res);
+                    res.json({ message: "Profile created successfully" });
+                  }
+                );
               }
             );
           }
@@ -76,7 +109,7 @@ router.post("/create", upload.single("profilePic"), (req, res) => {
     );
   } catch (err) {
     console.error("CREATE PROFILE ERROR:", err);
-    res.status(401).json({ message: "Invalid or missing token" });
+    res.status(401).json({ message: "Invalid or missing token. Please log in again." });
   }
 });
 
@@ -92,7 +125,7 @@ router.get("/me", (req, res) => {
        WHERE u.id = ?`,
       [userId],
       (err, rows) => {
-        if (err) return res.status(500).json({ message: "DB error" });
+        if (err) return handleDbError(err, res);
         if (!rows.length) return res.status(404).json({ message: "User not found" });
 
         const profile = rows[0];
@@ -103,7 +136,7 @@ router.get("/me", (req, res) => {
             `INSERT INTO profiles (user_id, username, bio, expertise) VALUES (?, ?, NULL, NULL)`,
             [userId, anonUsername],
             (insertErr) => {
-              if (insertErr) return res.status(500).json({ message: "Failed to create anonymous profile" });
+              if (insertErr) return handleDbError(insertErr, res);
               return res.json({
                 preference: "anonymous",
                 username: anonUsername,
@@ -144,7 +177,7 @@ router.get("/view/:username", (req, res) => {
      WHERE p.username = ?`,
     [username],
     (err, rows) => {
-      if (err) return res.status(500).json({ message: "DB error" });
+      if (err) return handleDbError(err, res);
       if (!rows.length) return res.status(404).json({ message: "User not found" });
 
       const user = rows[0];
@@ -181,7 +214,7 @@ router.put("/update", upload.single("profilePic"), (req, res) => {
         `UPDATE profiles SET username = ?, bio = ?, expertise = ?, profile_image_url = ? WHERE user_id = ?`,
         [username, bio, expertise, profileImageUrl, userId],
         (err) => {
-          if (err) return res.status(500).json({ message: "DB error" });
+          if (err) return handleDbError(err, res);
           res.json({ message: "Profile updated successfully" });
         }
       );
@@ -190,7 +223,7 @@ router.put("/update", upload.single("profilePic"), (req, res) => {
         `UPDATE profiles SET username = ?, bio = ?, expertise = ? WHERE user_id = ?`,
         [username, bio, expertise, userId],
         (err) => {
-          if (err) return res.status(500).json({ message: "DB error" });
+          if (err) return handleDbError(err, res);
           res.json({ message: "Profile updated successfully" });
         }
       );
