@@ -255,13 +255,8 @@
 
     .btn-primary:active { transform: translateY(-1px); }
 
-    .btn-primary svg {
-      transition: transform 0.3s;
-    }
-
-    .btn-primary:hover svg {
-      transform: translateX(4px);
-    }
+    .btn-primary svg { transition: transform 0.3s; }
+    .btn-primary:hover svg { transform: translateX(4px); }
 
     .btn-secondary {
       display: inline-flex;
@@ -287,7 +282,6 @@
       color: #fff;
     }
 
-    /* scroll hint */
     .scroll-hint {
       position: absolute;
       bottom: 40px;
@@ -357,6 +351,179 @@
       font-weight: 300;
       line-height: 1.5;
     }
+
+    /* ===================== TODAY'S PULSE ===================== */
+    .section-pulse {
+      position: relative;
+      z-index: 1;
+      padding: 100px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .pulse-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,43,214,0.15);
+      border-radius: 28px;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      margin-top: 50px;
+    }
+
+    .pulse-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--pink-soft), transparent);
+    }
+
+    .pulse-live-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,43,214,0.1);
+      border: 1px solid rgba(255,43,214,0.25);
+      border-radius: 30px;
+      padding: 5px 14px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--pink-pale);
+      margin-bottom: 24px;
+    }
+
+    .pulse-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--pink-soft);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .pulse-question {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(22px, 4vw, 36px);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.35;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 32px;
+    }
+
+    .pulse-answers-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .pulse-answer-preview {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      transition: all 0.3s;
+    }
+
+    .pulse-answer-preview:hover {
+      background: rgba(255,43,214,0.05);
+      border-color: rgba(255,43,214,0.15);
+    }
+
+    .pulse-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,43,214,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--pink-pale);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .pulse-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+    .pulse-answer-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .pulse-answer-text strong {
+      color: rgba(255,255,255,0.4);
+      font-weight: 400;
+      font-size: 11px;
+      display: block;
+      margin-bottom: 3px;
+      letter-spacing: 0.3px;
+    }
+
+    .pulse-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pulse-count {
+      font-size: 14px;
+      color: var(--white-dim);
+    }
+
+    .pulse-count span {
+      color: var(--pink-pale);
+      font-weight: 600;
+    }
+
+    .pulse-join-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 28px;
+      border-radius: 30px;
+      border: 1px solid rgba(255,43,214,0.4);
+      background: rgba(255,43,214,0.08);
+      color: var(--pink-soft);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .pulse-join-btn:hover {
+      background: rgba(255,43,214,0.18);
+      border-color: var(--pink-soft);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    .pulse-loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--white-dim);
+    }
+
+    .pulse-spinner {
+      width: 26px; height: 26px;
+      border: 2px solid rgba(255,43,214,0.2);
+      border-top-color: var(--pink-soft);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ===================== SECTION: CRISIS ===================== */
     .section-crisis {
@@ -643,9 +810,7 @@
       pointer-events: none;
     }
 
-    .cta-box .section-title {
-      margin-bottom: 16px;
-    }
+    .cta-box .section-title { margin-bottom: 16px; }
 
     .cta-box p {
       font-size: 16px;
@@ -729,22 +894,17 @@
     @media (max-width: 768px) {
       nav { padding: 18px 24px; }
       .nav-links { display: none; }
-
       .hero { padding: 100px 24px 70px; }
-
       .crisis-grid { grid-template-columns: 1fr; gap: 40px; }
       .features-grid { grid-template-columns: 1fr; }
       .steps-row { flex-direction: column; align-items: center; }
-
       .stat-item { border-left: none; border-top: 1px solid rgba(255,255,255,0.06); }
       .stat-item:first-child { border-top: none; }
-
       .cta-box { padding: 50px 28px; }
-
+      .pulse-card { padding: 28px; }
       footer { flex-direction: column; text-align: center; padding: 32px 24px; }
       .footer-links { justify-content: center; }
-
-      .section-crisis, .section-features, .section-how { padding: 70px 24px; }
+      .section-crisis, .section-features, .section-how, .section-pulse { padding: 70px 24px; }
     }
   </style>
 </head>
@@ -762,6 +922,7 @@
   <div class="nav-brand">AdviceMe</div>
   <div class="nav-links">
     <a href="#about">About</a>
+    <a href="#pulse">Today's Pulse</a>
     <a href="#how">How it Works</a>
     <a href="login.html" class="nav-cta">Sign In</a>
   </div>
@@ -809,6 +970,21 @@
     <div class="stat-label">potential for healing when someone truly listens</div>
   </div>
 </div>
+
+<!-- TODAY'S PULSE -->
+<section class="section-pulse" id="pulse">
+  <div class="reveal">
+    <span class="section-tag">Today's Pulse</span>
+    <h2 class="section-title">A question.<br/><em>A thousand stories.</em></h2>
+    <div class="divider"></div>
+  </div>
+  <div class="pulse-card reveal" id="pulseCard">
+    <div class="pulse-loading">
+      <div class="pulse-spinner"></div>
+      <p style="font-size:14px;color:rgba(255,255,255,0.4);">Loading today's question...</p>
+    </div>
+  </div>
+</section>
 
 <!-- CRISIS SECTION -->
 <section class="section-crisis">
@@ -970,32 +1146,84 @@
   <div class="footer-links">
     <a href="login.html">Sign In</a>
     <a href="login.html">Sign Up</a>
+    <a href="privacy.html">Privacy Policy</a>
   </div>
 </footer>
 
 <script>
+  const API_PULSE = "https://api.adviceme.social/api/pulse";
+
+  async function loadPulsePreview() {
+    try {
+      const res = await fetch(`${API_PULSE}/active`);
+      const { question, answers } = await res.json();
+      const card = document.getElementById("pulseCard");
+
+      if (!question) {
+        card.innerHTML = `<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.35);font-size:15px;">No active question today — check back soon 🌙</div>`;
+        return;
+      }
+
+      const previewAnswers = answers.slice(0, 3);
+
+      card.innerHTML = `
+        <div class="pulse-live-tag">
+          <div class="pulse-dot"></div> Live Now
+        </div>
+        <div class="pulse-question">"${question.question_text}"</div>
+        ${previewAnswers.length > 0 ? `
+          <div class="pulse-answers-preview">
+            ${previewAnswers.map(a => {
+              const truncated = a.answer_text.length > 90 ? a.answer_text.substring(0, 90) + '...' : a.answer_text;
+              const initial = (a.username || '?').charAt(0).toUpperCase();
+              const avatarHtml = a.profile_image_url
+                ? `<img src="${a.profile_image_url}" alt="${a.username}" />`
+                : initial;
+              return `
+                <div class="pulse-answer-preview">
+                  <div class="pulse-avatar">${avatarHtml}</div>
+                  <div class="pulse-answer-text">
+                    <strong>${a.username}</strong>
+                    ${truncated}
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>` : ''}
+        <div class="pulse-footer">
+          <div class="pulse-count">
+            <span>${answers.length}</span> ${answers.length === 1 ? 'person has' : 'people have'} shared their story today
+          </div>
+          <a href="discuss.html" class="pulse-join-btn">Read &amp; Join the Discussion →</a>
+        </div>
+      `;
+    } catch(e) {
+      document.getElementById("pulseCard").innerHTML = `
+        <div style="text-align:center;padding:30px;color:rgba(255,255,255,0.3);font-size:14px;">
+          Could not load today's question. <a href="discuss.html" style="color:var(--pink-soft);">Visit the discussion page →</a>
+        </div>`;
+    }
+  }
+
   // Scroll reveal
   const reveals = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.classList.add('visible');
-        }, 80);
+        setTimeout(() => entry.target.classList.add('visible'), 80);
         observer.unobserve(entry.target);
       }
     });
   }, { threshold: 0.12 });
-
   reveals.forEach(el => observer.observe(el));
 
   // Stagger sibling reveals
   document.querySelectorAll('.steps-row, .features-grid, .crisis-cards, .stats-row').forEach(container => {
-    const children = container.querySelectorAll('.reveal');
-    children.forEach((child, i) => {
+    container.querySelectorAll('.reveal').forEach((child, i) => {
       child.style.transitionDelay = `${i * 0.1}s`;
     });
   });
+
+  loadPulsePreview();
 </script>
 </body>
 </html>

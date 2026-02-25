@@ -10,6 +10,7 @@ const adviceRoutes  = require("./routes/advice");
 const badgeRoutes   = require("./routes/badge");
 const chatRoutes    = require("./routes/chat");
 const { router: adminRoutes } = require("./routes/admin");
+const pulseRoutes = require("./routes/pulse");
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use("/api/advice",   adviceRoutes);
 app.use("/api/badge",    badgeRoutes);
 app.use("/api/chat",     chatRoutes);
 app.use("/api/admin",    adminRoutes);
+app.use("/api/pulse", pulseRoutes);
 
 app.get("/", (req, res) => res.send("Backend is running 🚀"));
 

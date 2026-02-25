@@ -19,13 +19,10 @@ function getBadgeLevel(points) {
 const adminAuth = (req, res, next) => {
   const header = req.headers.authorization;
   if (!header) return res.status(401).json({ message: "No token provided" });
-
   const token = header.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== "admin") {
-      return res.status(403).json({ message: "Admin access only" });
-    }
+    if (decoded.role !== "admin") return res.status(403).json({ message: "Admin access only" });
     req.admin = decoded;
     next();
   } catch {
@@ -33,54 +30,28 @@ const adminAuth = (req, res, next) => {
   }
 };
 
-/* ================= ADMIN SETUP (run once) ================= */
+/* ================= ADMIN SETUP ================= */
 router.post("/setup", async (req, res) => {
   const { username, password, secretKey } = req.body;
-
-  if (secretKey !== process.env.ADMIN_SECRET_KEY) {
-    return res.status(403).json({ message: "Invalid secret key" });
-  }
-
+  if (secretKey !== process.env.ADMIN_SECRET_KEY) return res.status(403).json({ message: "Invalid secret key" });
   const hashedPassword = await bcrypt.hash(password, 10);
-
-  db.query(
-    "INSERT INTO admins (username, password) VALUES (?, ?)",
-    [username, hashedPassword],
-    (err) => {
-      if (err) return res.status(409).json({ message: "Admin already exists" });
-      res.json({ message: "Admin created successfully" });
-    }
-  );
+  db.query("INSERT INTO admins (username, password) VALUES (?, ?)", [username, hashedPassword], (err) => {
+    if (err) return res.status(409).json({ message: "Admin already exists" });
+    res.json({ message: "Admin created successfully" });
+  });
 });
 
 /* ================= ADMIN LOGIN ================= */
 router.post("/login", (req, res) => {
   const { username, password } = req.body;
-
-  db.query(
-    "SELECT * FROM admins WHERE username = ?",
-    [username],
-    async (err, results) => {
-      if (err || results.length === 0) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      const admin = results[0];
-      const match = await bcrypt.compare(password, admin.password);
-
-      if (!match) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      const token = jwt.sign(
-        { id: admin.id, username: admin.username, role: "admin" },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-      );
-
-      res.json({ token });
-    }
-  );
+  db.query("SELECT * FROM admins WHERE username = ?", [username], async (err, results) => {
+    if (err || results.length === 0) return res.status(401).json({ message: "Invalid credentials" });
+    const admin = results[0];
+    const match = await bcrypt.compare(password, admin.password);
+    if (!match) return res.status(401).json({ message: "Invalid credentials" });
+    const token = jwt.sign({ id: admin.id, username: admin.username, role: "admin" }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    res.json({ token });
+  });
 });
 
 /* ================= DASHBOARD STATS ================= */
@@ -95,7 +66,6 @@ router.get("/stats", adminAuth, (req, res) => {
       (SELECT COUNT(*) FROM user_advice WHERE chat_status = 'REPORTED') AS reported_chats,
       (SELECT COUNT(*) FROM user_advice WHERE chat_status = 'ENDED') AS ended_chats
   `;
-
   db.query(sql, (err, rows) => {
     if (err) return res.status(500).json({ message: "DB error" });
     res.json(rows[0]);
@@ -105,88 +75,58 @@ router.get("/stats", adminAuth, (req, res) => {
 /* ================= GET ALL USERS ================= */
 router.get("/users", adminAuth, (req, res) => {
   const sql = `
-    SELECT
-      u.id, u.email, u.user_type, u.preference, u.created_at,
+    SELECT u.id, u.email, u.user_type, u.preference, u.created_at,
       u.badge_points, u.badge_level, u.banned,
       p.username, p.bio, p.expertise, p.profile_image_url
     FROM users u
     LEFT JOIN profiles p ON p.user_id = u.id
     ORDER BY u.created_at DESC
   `;
-
   db.query(sql, (err, rows) => {
     if (err) return res.status(500).json({ message: "DB error" });
     res.json(rows);
   });
 });
 
-/* ================= BAN USER ================= */
+/* ================= BAN / UNBAN USER ================= */
 router.put("/users/ban/:userId", adminAuth, (req, res) => {
-  const { userId } = req.params;
-
-  db.query(
-    "UPDATE users SET banned = 1 WHERE id = ?",
-    [userId],
-    (err) => {
-      if (err) return res.status(500).json({ message: "DB error" });
-      res.json({ message: "User banned successfully" });
-    }
-  );
+  db.query("UPDATE users SET banned = 1 WHERE id = ?", [req.params.userId], (err) => {
+    if (err) return res.status(500).json({ message: "DB error" });
+    res.json({ message: "User banned successfully" });
+  });
 });
 
-/* ================= UNBAN USER ================= */
 router.put("/users/unban/:userId", adminAuth, (req, res) => {
-  const { userId } = req.params;
-
-  db.query(
-    "UPDATE users SET banned = 0 WHERE id = ?",
-    [userId],
-    (err) => {
-      if (err) return res.status(500).json({ message: "DB error" });
-      res.json({ message: "User unbanned successfully" });
-    }
-  );
+  db.query("UPDATE users SET banned = 0 WHERE id = ?", [req.params.userId], (err) => {
+    if (err) return res.status(500).json({ message: "DB error" });
+    res.json({ message: "User unbanned successfully" });
+  });
 });
 
-/* ================= GET REPORTED CHATS ================= */
+/* ================= REPORTED CHATS ================= */
 router.get("/reports", adminAuth, (req, res) => {
   const sql = `
-    SELECT
-      ua.id AS advice_id,
-      ua.giver_username,
-      ur.username AS taker_username,
-      ur.category,
-      ur.request_text,
-      ua.advice_text,
-      ua.chat_status,
-      ua.created_at
+    SELECT ua.id AS advice_id, ua.giver_username, ur.username AS taker_username,
+      ur.category, ur.request_text, ua.advice_text, ua.chat_status, ua.created_at
     FROM user_advice ua
     JOIN user_requests ur ON ua.track_id = ur.track_id
     WHERE ua.chat_status = 'REPORTED'
     ORDER BY ua.created_at DESC
   `;
-
   db.query(sql, (err, rows) => {
     if (err) return res.status(500).json({ message: "DB error" });
     res.json(rows);
   });
 });
 
-/* ================= DISMISS REPORT ================= */
 router.put("/reports/dismiss/:adviceId", adminAuth, (req, res) => {
-  const { adviceId } = req.params;
-
-  db.query(
-    "UPDATE user_advice SET chat_status = 'ENDED' WHERE id = ?",
-    [adviceId],
-    (err) => {
-      if (err) return res.status(500).json({ message: "DB error" });
-      res.json({ message: "Report dismissed" });
-    }
-  );
+  db.query("UPDATE user_advice SET chat_status = 'ENDED' WHERE id = ?", [req.params.adviceId], (err) => {
+    if (err) return res.status(500).json({ message: "DB error" });
+    res.json({ message: "Report dismissed" });
+  });
 });
 
-/* ================= TOP GIVERS LEADERBOARD ================= */
+/* ================= LEADERBOARD ================= */
 router.get("/leaderboard", adminAuth, (req, res) => {
   const sql = `
     SELECT p.username, p.profile_image_url, u.badge_points, u.badge_level
@@ -196,17 +136,92 @@ router.get("/leaderboard", adminAuth, (req, res) => {
     ORDER BY u.badge_points DESC
     LIMIT 10
   `;
-
   db.query(sql, (err, rows) => {
     if (err) return res.status(500).json({ message: "DB error" });
+    res.json(rows.map(r => ({ ...r, badge_icon: getBadgeLevel(r.badge_points || 0).icon, badge_level: r.badge_level || "Newcomer" })));
+  });
+});
 
-    const result = rows.map(r => ({
-      ...r,
-      badge_icon:  getBadgeLevel(r.badge_points || 0).icon,
-      badge_level: r.badge_level || "Newcomer"
-    }));
+/* =======================================================
+   DAILY PULSE — ADMIN ROUTES
+   ======================================================= */
 
-    res.json(result);
+/* POST new daily question */
+router.post("/pulse/post", adminAuth, (req, res) => {
+  const { question_text, question_slug } = req.body;
+  if (!question_text || !question_slug) return res.status(400).json({ message: "Missing fields" });
+
+  db.query("UPDATE daily_questions SET is_active = 0 WHERE is_active = 1", (err) => {
+    if (err) return res.status(500).json({ message: "DB error" });
+    const expires_at = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    db.query(
+      "INSERT INTO daily_questions (question_text, question_slug, is_active, expires_at) VALUES (?, ?, 1, ?)",
+      [question_text, question_slug, expires_at],
+      (err, result) => {
+        if (err) return res.status(500).json({ message: "DB error: " + err.message });
+        res.json({ message: "Question posted successfully", id: result.insertId });
+      }
+    );
+  });
+});
+
+/* GET active question with answers */
+router.get("/pulse/active", adminAuth, (req, res) => {
+  db.query("SELECT * FROM daily_questions WHERE is_active = 1 LIMIT 1", (err, questions) => {
+    if (err) return res.status(500).json({ message: "DB error" });
+    if (!questions.length) return res.json({ question: null, answers: [] });
+    const q = questions[0];
+    db.query(
+      `SELECT da.*, p.profile_image_url 
+       FROM daily_answers da 
+       LEFT JOIN profiles p ON p.username = da.username
+       WHERE da.question_id = ? 
+       ORDER BY da.likes DESC, da.created_at ASC`,
+      [q.id],
+      (err, answers) => {
+        if (err) return res.status(500).json({ message: "DB error" });
+        res.json({ question: q, answers });
+      }
+    );
+  });
+});
+
+/* GET all past questions */
+router.get("/pulse/history", adminAuth, (req, res) => {
+  const sql = `
+    SELECT dq.*, COUNT(da.id) AS answer_count
+    FROM daily_questions dq
+    LEFT JOIN daily_answers da ON da.question_id = dq.id
+    GROUP BY dq.id
+    ORDER BY dq.created_at DESC
+    LIMIT 30
+  `;
+  db.query(sql, (err, rows) => {
+    if (err) return res.status(500).json({ message: "DB error" });
+    res.json(rows);
+  });
+});
+
+/* MARK best answer */
+router.put("/pulse/best/:answerId", adminAuth, (req, res) => {
+  const { answerId } = req.params;
+  db.query("SELECT * FROM daily_answers WHERE id = ?", [answerId], (err, rows) => {
+    if (err || !rows.length) return res.status(404).json({ message: "Answer not found" });
+    const answer = rows[0];
+    db.query("UPDATE daily_answers SET is_best = 0 WHERE question_id = ?", [answer.question_id], (err) => {
+      if (err) return res.status(500).json({ message: "DB error" });
+      db.query("UPDATE daily_answers SET is_best = 1 WHERE id = ?", [answerId], (err) => {
+        if (err) return res.status(500).json({ message: "DB error" });
+        db.query(
+          "UPDATE users u JOIN profiles p ON p.user_id = u.id SET u.best_advice_count = u.best_advice_count + 1 WHERE p.username = ?",
+          [answer.username],
+          (err) => {
+            if (err) return res.status(500).json({ message: "DB error" });
+            res.json({ message: `Best Advice awarded to ${answer.username} 🏆` });
+          }
+        );
+      });
+    });
   });
 });
 

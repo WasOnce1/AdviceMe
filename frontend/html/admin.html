@@ -78,6 +78,9 @@
     .btn-unban:hover  { background: rgba(0,255,136,0.1);  border-color: var(--green);  }
     .btn-dismiss { color: var(--yellow); border-color: rgba(255,204,0,0.3);  background: transparent; }
     .btn-dismiss:hover { background: rgba(255,204,0,0.1); border-color: var(--yellow); }
+    .btn-best { color: var(--yellow); border-color: rgba(255,204,0,0.4); background: transparent; }
+    .btn-best:hover { background: rgba(255,204,0,0.1); border-color: var(--yellow); }
+    .btn-best.awarded { color: var(--bg); background: var(--yellow); border-color: var(--yellow); }
     .leaderboard-item { display: flex; align-items: center; gap: 15px; padding: 14px 0; border-bottom: 1px solid rgba(0,255,136,0.05); }
     .leaderboard-item:last-child { border-bottom: none; }
     .rank { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; min-width: 35px; }
@@ -92,6 +95,57 @@
     .search-input::placeholder { color: var(--text-dim); }
     .search-input:focus { border-color: var(--green); background: rgba(0,255,136,0.05); }
     .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-bright); vertical-align: middle; margin-right: 8px; }
+
+    /* ===== PULSE STYLES ===== */
+    .pulse-form { display: flex; flex-direction: column; gap: 14px; }
+    .pulse-textarea {
+      width: 100%; min-height: 90px; padding: 12px 16px;
+      background: rgba(0,255,136,0.03); border: 1px solid var(--border);
+      border-radius: 3px; font-family: 'Share Tech Mono', monospace;
+      font-size: 13px; color: var(--green); resize: vertical; outline: none;
+      letter-spacing: 0.5px; transition: border-color 0.2s;
+    }
+    .pulse-textarea:focus { border-color: var(--green); background: rgba(0,255,136,0.05); }
+    .pulse-textarea::placeholder { color: var(--text-dim); }
+    .pulse-input {
+      width: 100%; padding: 10px 16px;
+      background: rgba(0,255,136,0.03); border: 1px solid var(--border);
+      border-radius: 3px; font-family: 'Share Tech Mono', monospace;
+      font-size: 12px; color: var(--green); outline: none; letter-spacing: 1px;
+    }
+    .pulse-input:focus { border-color: var(--green); }
+    .pulse-input::placeholder { color: var(--text-dim); }
+    .btn-post {
+      align-self: flex-start; padding: 10px 24px; border-radius: 3px;
+      font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px;
+      cursor: pointer; border: 1px solid var(--green); background: rgba(0,255,136,0.08);
+      color: var(--green); transition: all 0.2s;
+    }
+    .btn-post:hover { background: rgba(0,255,136,0.18); }
+    .active-question-box {
+      background: rgba(0,255,136,0.04); border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 4px; padding: 20px; margin-bottom: 20px;
+    }
+    .active-q-text { font-size: 15px; color: var(--green); line-height: 1.6; margin-bottom: 8px; }
+    .active-q-meta { font-size: 10px; color: var(--text-dim); letter-spacing: 2px; }
+    .answer-card {
+      border: 1px solid var(--border); border-radius: 4px; padding: 16px;
+      margin-bottom: 12px; transition: border-color 0.2s;
+    }
+    .answer-card.is-best { border-color: rgba(255,204,0,0.4); background: rgba(255,204,0,0.04); }
+    .answer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .answer-username { color: var(--blue); font-size: 12px; letter-spacing: 1px; }
+    .answer-meta { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; display: flex; gap: 12px; align-items: center; }
+    .answer-text { font-size: 13px; color: var(--text); line-height: 1.7; margin-bottom: 12px; }
+    .best-crown { color: var(--yellow); font-size: 13px; letter-spacing: 1px; }
+    .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(0,255,136,0.05); font-size: 12px; }
+    .history-item:last-child { border-bottom: none; }
+    .history-q { color: var(--text); max-width: 70%; line-height: 1.5; }
+    .history-meta { color: var(--text-dim); font-size: 10px; letter-spacing: 1px; text-align: right; }
+    .pulse-msg { padding: 10px 16px; border-radius: 3px; font-size: 12px; letter-spacing: 1px; margin-top: 10px; display: none; }
+    .pulse-msg.success { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2); color: var(--green); }
+    .pulse-msg.error { background: rgba(255,51,85,0.08); border: 1px solid rgba(255,51,85,0.2); color: var(--red); }
+    .no-answers { color: var(--text-dim); font-size: 12px; letter-spacing: 2px; padding: 20px; text-align: center; }
   </style>
 </head>
 <body>
@@ -107,6 +161,7 @@
     <div class="nav-item" onclick="showSection('users', this)"><span class="nav-icon">◉</span> USERS</div>
     <div class="nav-item" onclick="showSection('reports', this)"><span class="nav-icon">⚠</span> REPORTS</div>
     <div class="nav-item" onclick="showSection('leaderboard', this)"><span class="nav-icon">★</span> LEADERBOARD</div>
+    <div class="nav-item" onclick="showSection('pulse', this)"><span class="nav-icon">◎</span> DAILY PULSE</div>
   </nav>
   <div class="sidebar-footer">
     <button class="logout-btn" onclick="logout()">[ LOGOUT ]</button>
@@ -123,6 +178,7 @@
     </div>
   </div>
 
+  <!-- DASHBOARD -->
   <div class="section active" id="section-dashboard">
     <div class="stats-grid" id="statsGrid">
       <div class="loading-text" style="grid-column: span 4;">loading system data...</div>
@@ -139,6 +195,7 @@
     </div>
   </div>
 
+  <!-- USERS -->
   <div class="section" id="section-users">
     <div class="box">
       <div class="box-header">
@@ -158,6 +215,7 @@
     </div>
   </div>
 
+  <!-- REPORTS -->
   <div class="section" id="section-reports">
     <div class="box">
       <div class="box-header"><h3>REPORTED CHATS</h3><span id="reportCount">—</span></div>
@@ -174,11 +232,42 @@
     </div>
   </div>
 
+  <!-- LEADERBOARD -->
   <div class="section" id="section-leaderboard">
     <div class="box">
       <div class="box-header"><h3>TOP GIVERS</h3><span>BY BADGE POINTS</span></div>
       <div class="box-body" id="leaderboardBody"><div class="loading-text">loading leaderboard...</div></div>
     </div>
+  </div>
+
+  <!-- DAILY PULSE -->
+  <div class="section" id="section-pulse">
+
+    <!-- POST NEW QUESTION -->
+    <div class="box">
+      <div class="box-header"><h3>POST TODAY'S QUESTION</h3><span>DAILY PULSE</span></div>
+      <div class="box-body">
+        <div class="pulse-form">
+          <textarea class="pulse-textarea" id="pulseQuestion" placeholder="Enter today's question... e.g. What's one thing you wish someone told you during your hardest time?"></textarea>
+          <input class="pulse-input" id="pulseSlug" placeholder="URL slug e.g. advice-during-hardest-time (no spaces, use hyphens)" />
+          <button class="btn-post" onclick="postQuestion()">[ POST QUESTION ]</button>
+        </div>
+        <div class="pulse-msg" id="pulseMsg"></div>
+      </div>
+    </div>
+
+    <!-- ACTIVE QUESTION & ANSWERS -->
+    <div class="box">
+      <div class="box-header"><h3>ACTIVE QUESTION</h3><span id="activeAnswerCount">— ANSWERS</span></div>
+      <div class="box-body" id="activeQuestionBody"><div class="loading-text">loading...</div></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="box">
+      <div class="box-header"><h3>QUESTION HISTORY</h3><span>ARCHIVED</span></div>
+      <div class="box-body" id="pulseHistory"><div class="loading-text">loading history...</div></div>
+    </div>
+
   </div>
 </div>
 
@@ -186,9 +275,9 @@
   const token = localStorage.getItem("adminToken");
   if (!token) window.location.href = "root-access.html";
 
-  const API = "https://adviceme-production.up.railway.app/api/admin";
-  const headers = { Authorization: `Bearer ${token}` };
-  let allUsers = [];
+  const API      = "https://api.adviceme.social/api/admin";
+  const headers  = { Authorization: `Bearer ${token}` };
+  let allUsers   = [];
 
   setInterval(() => {
     document.getElementById("currentTime").innerText = new Date().toLocaleTimeString("en-US", { hour12: false });
@@ -204,11 +293,12 @@
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
     document.getElementById("section-" + name).classList.add("active");
-    document.getElementById("pageTitle").innerText = name.toUpperCase();
+    document.getElementById("pageTitle").innerText = name.toUpperCase().replace("-", " ");
     el.classList.add("active");
     if (name === "users") loadUsers();
     if (name === "reports") loadReports();
     if (name === "leaderboard") loadLeaderboard();
+    if (name === "pulse") loadPulse();
   }
 
   async function loadStats() {
@@ -313,6 +403,100 @@
         </div>
         <div class="leaderboard-score">${g.badge_points||0}</div>
       </div>`).join("");
+  }
+
+  /* ===== DAILY PULSE ===== */
+  async function loadPulse() {
+    const res = await fetch(`${API}/pulse/active`, { headers });
+    const { question, answers } = await res.json();
+    const body = document.getElementById("activeQuestionBody");
+
+    if (!question) {
+      body.innerHTML = `<div class="no-answers">no active question — post one above</div>`;
+      document.getElementById("activeAnswerCount").innerText = "0 ANSWERS";
+    } else {
+      const expiresAt = new Date(question.expires_at);
+      document.getElementById("activeAnswerCount").innerText = `${answers.length} ANSWERS`;
+      body.innerHTML = `
+        <div class="active-question-box">
+          <div class="active-q-text">"${question.question_text}"</div>
+          <div class="active-q-meta">SLUG: ${question.question_slug} &nbsp;·&nbsp; EXPIRES: ${expiresAt.toLocaleString()}</div>
+        </div>
+        ${answers.length === 0 ? '<div class="no-answers">no answers yet...</div>' :
+          answers.map(a => `
+            <div class="answer-card ${a.is_best ? 'is-best' : ''}" id="answer-${a.id}">
+              <div class="answer-header">
+                <span class="answer-username">${a.username}</span>
+                <div class="answer-meta">
+                  ${a.is_best ? '<span class="best-crown">🏆 BEST ADVICE</span>' : ''}
+                  <span>♥ ${a.likes}</span>
+                  <span>${new Date(a.created_at).toLocaleTimeString()}</span>
+                  <button class="btn btn-best ${a.is_best ? 'awarded' : ''}" onclick="markBest(${a.id}, this)">
+                    ${a.is_best ? '★ AWARDED' : '★ MARK BEST'}
+                  </button>
+                </div>
+              </div>
+              <div class="answer-text">${a.answer_text}</div>
+            </div>`).join("")
+        }
+      `;
+    }
+
+    // Load history
+    const hRes = await fetch(`${API}/pulse/history`, { headers });
+    const history = await hRes.json();
+    const hEl = document.getElementById("pulseHistory");
+    if (!history.length) { hEl.innerHTML = `<div class="no-answers">no past questions yet</div>`; return; }
+    hEl.innerHTML = history.map(q => `
+      <div class="history-item">
+        <div class="history-q">"${q.question_text}"</div>
+        <div class="history-meta">
+          <div>${q.answer_count} answers</div>
+          <div>${new Date(q.created_at).toLocaleDateString()}</div>
+          <div style="color:${q.is_active?'var(--green)':'var(--text-dim)'};">${q.is_active ? '● LIVE' : 'ARCHIVED'}</div>
+        </div>
+      </div>`).join("");
+  }
+
+  async function postQuestion() {
+    const question_text = document.getElementById("pulseQuestion").value.trim();
+    const question_slug = document.getElementById("pulseSlug").value.trim();
+    const msg = document.getElementById("pulseMsg");
+
+    if (!question_text || !question_slug) {
+      msg.className = "pulse-msg error"; msg.style.display = "block";
+      msg.innerText = "both question and slug are required"; return;
+    }
+
+    const res = await fetch(`${API}/pulse/post`, {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ question_text, question_slug })
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      msg.className = "pulse-msg success"; msg.style.display = "block";
+      msg.innerText = "✓ " + data.message;
+      document.getElementById("pulseQuestion").value = "";
+      document.getElementById("pulseSlug").value = "";
+      loadPulse();
+    } else {
+      msg.className = "pulse-msg error"; msg.style.display = "block";
+      msg.innerText = "✗ " + data.message;
+    }
+    setTimeout(() => msg.style.display = "none", 4000);
+  }
+
+  async function markBest(answerId, btn) {
+    if (!confirm("Award Best Advice to this answer?")) return;
+    const res = await fetch(`${API}/pulse/best/${answerId}`, { method: "PUT", headers });
+    const data = await res.json();
+    if (res.ok) {
+      loadPulse();
+    } else {
+      alert(data.message);
+    }
   }
 
   function logout() {
