@@ -15,30 +15,35 @@ const pulseRoutes = require("./routes/pulse");
 const app = express();
 
 /* ================= STARTUP MIGRATION ================= */
-// Fix profiles where user_id is NULL — match by email prefix to username
-// This heals old accounts created before auto-profile logic was added
+// Fix profiles where user_id is NULL
+// Iterates every user and matches by email prefix → username
 const db = require("./db");
-db.query(
-  `UPDATE profiles p
-   JOIN users u ON LOWER(SUBSTRING_INDEX(u.email, '@', 1)) = LOWER(p.username)
-   SET p.user_id = u.id
-   WHERE p.user_id IS NULL OR p.user_id = 0`,
-  (err, result) => {
-    if (err) console.error("Migration error:", err.message);
-    else if (result.affectedRows > 0)
-      console.log(`✅ Migration: fixed user_id for ${result.affectedRows} profile(s)`);
-  }
-);
+db.query("SELECT id, email FROM users", (err, users) => {
+  if (err) { console.error("Migration fetch error:", err.message); return; }
+  console.log(`Migration: checking ${users.length} user(s) for null user_id in profiles`);
+  users.forEach(u => {
+    const emailPrefix = u.email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "_").substring(0, 30);
+    db.query(
+      "UPDATE profiles SET user_id = ? WHERE (user_id IS NULL OR user_id = 0) AND LOWER(username) = ?",
+      [u.id, emailPrefix],
+      (err, result) => {
+        if (err) console.error(`Migration error for ${u.email}:`, err.message);
+        else if (result.affectedRows > 0)
+          console.log(`✅ Migration: fixed user_id for username=${emailPrefix} userId=${u.id}`);
+      }
+    );
+  });
+});
 
 /* ================= CORS ================= */
 app.use(cors({
   origin: [
-    "https://adviceme.social",                      // custom domain
-    "https://www.adviceme.social",                  // www version
-    "https://euphonious-bunny-6005b4.netlify.app",  // Netlify fallback
-    "http://localhost:5500",                        // VS Code Live Server
-    "http://127.0.0.1:5500",                        // VS Code Live Server alt
-    "http://localhost:3000"                         // local backend testing
+    "https://adviceme.social",
+    "https://www.adviceme.social",
+    "https://euphonious-bunny-6005b4.netlify.app",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost:3000"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -72,7 +77,7 @@ app.use("/api/advice",   adviceRoutes);
 app.use("/api/badge",    badgeRoutes);
 app.use("/api/chat",     chatRoutes);
 app.use("/api/admin",    adminRoutes);
-app.use("/api/pulse", pulseRoutes);
+app.use("/api/pulse",    pulseRoutes);
 
 app.get("/", (req, res) => res.send("Backend is running 🚀"));
 
