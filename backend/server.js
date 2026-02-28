@@ -14,6 +14,22 @@ const pulseRoutes = require("./routes/pulse");
 
 const app = express();
 
+/* ================= STARTUP MIGRATION ================= */
+// Fix profiles where user_id is NULL — match by email prefix to username
+// This heals old accounts created before auto-profile logic was added
+const db = require("./db");
+db.query(
+  `UPDATE profiles p
+   JOIN users u ON LOWER(SUBSTRING_INDEX(u.email, '@', 1)) = LOWER(p.username)
+   SET p.user_id = u.id
+   WHERE p.user_id IS NULL OR p.user_id = 0`,
+  (err, result) => {
+    if (err) console.error("Migration error:", err.message);
+    else if (result.affectedRows > 0)
+      console.log(`✅ Migration: fixed user_id for ${result.affectedRows} profile(s)`);
+  }
+);
+
 /* ================= CORS ================= */
 app.use(cors({
   origin: [
