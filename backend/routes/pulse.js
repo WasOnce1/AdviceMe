@@ -82,23 +82,36 @@ router.post("/answer", authMiddleware, (req, res) => {
   const { question_id, answer_text } = req.body;
   if (!question_id || !answer_text?.trim()) return res.status(400).json({ message: "Missing fields" });
 
-  // Use user_id directly as username if no profile username exists
-  // This means ANYONE with an account (anonymous or not, profile or not) can answer
-  const username = req.user.username?.trim() || `anon_${req.user.id}`;
+  const userId = req.user.id;
 
+  // ✅ Always fetch current profile username from DB — never rely on token
+  // This ensures answer is stored with the correct username even after profile changes
   db.query(
-    "SELECT id FROM daily_answers WHERE question_id = ? AND username = ?",
-    [question_id, username],
+    "SELECT username FROM profiles WHERE user_id = ?",
+    [userId],
     (err, rows) => {
       if (err) return res.status(500).json({ message: "DB error" });
-      if (rows.length) return res.status(409).json({ message: "You already answered today's question" });
+
+      // Fallback to anon_X if no profile exists
+      const username = rows.length && rows[0].username?.trim()
+        ? rows[0].username.trim()
+        : `anon_${userId}`;
 
       db.query(
-        "INSERT INTO daily_answers (question_id, username, answer_text) VALUES (?, ?, ?)",
-        [question_id, username, answer_text.trim()],
-        (err) => {
+        "SELECT id FROM daily_answers WHERE question_id = ? AND username = ?",
+        [question_id, username],
+        (err, existing) => {
           if (err) return res.status(500).json({ message: "DB error" });
-          res.json({ message: "Answer submitted!" });
+          if (existing.length) return res.status(409).json({ message: "You already answered today's question" });
+
+          db.query(
+            "INSERT INTO daily_answers (question_id, username, answer_text) VALUES (?, ?, ?)",
+            [question_id, username, answer_text.trim()],
+            (err) => {
+              if (err) return res.status(500).json({ message: "DB error" });
+              res.json({ message: "Answer submitted!" });
+            }
+          );
         }
       );
     }
