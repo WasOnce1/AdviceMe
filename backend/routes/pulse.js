@@ -177,6 +177,23 @@ router.get("/mylikes/:questionId", authMiddleware, (req, res) => {
   );
 });
 
+/* GET whether current user already answered a question (checks by user_id, not username) */
+/* This is reliable even if username changed after profile completion */
+router.get("/myanswer/:questionId", authMiddleware, (req, res) => {
+  const userId = req.user.id;
+  db.query(
+    `SELECT da.id FROM daily_answers da
+     JOIN profiles p ON p.username = da.username
+     WHERE da.question_id = ? AND p.user_id = ?
+     LIMIT 1`,
+    [req.params.questionId, userId],
+    (err, rows) => {
+      if (err) return res.status(500).json({ message: "DB error" });
+      res.json({ answered: rows.length > 0 });
+    }
+  );
+});
+
 /* ================= ADMIN: DELETE ANSWER ================= */
 router.delete("/admin/answer/:answerId", adminAuth, (req, res) => {
   const { answerId } = req.params;

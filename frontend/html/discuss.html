@@ -159,16 +159,16 @@
   const API   = "https://api.adviceme.social/api/pulse";
   const token = localStorage.getItem("token");
 
-  // ✅ FIX: isLoggedIn based purely on token — no profile needed to answer
+  // ✅ isLoggedIn based purely on token — no profile needed to answer
   const isLoggedIn = !!token;
 
-  let myUsername     = null;  // used only for "already answered" check
-  let myLikedAnswers = [];
+  let myUsername      = null;
+  let myLikedAnswers  = [];
+  let alreadyAnswered = false;  // ✅ set by /myanswer API (checks by user_id, not username)
   let currentQuestionId = null;
 
   async function init() {
-    // Try to get username for duplicate-answer detection
-    // Even if this fails, isLoggedIn stays true and user can still answer
+    // Get username for display purposes only (not for answered check anymore)
     if (token) {
       try {
         const res = await fetch("https://api.adviceme.social/api/profile/me", {
@@ -180,7 +180,7 @@
         }
       } catch(e) {}
 
-      // Fallback: decode token to get username/id
+      // Fallback: decode token
       if (!myUsername) {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
@@ -199,12 +199,21 @@
       const { question, answers } = await res.json();
       currentQuestionId = question?.id || null;
 
-      // Only fetch likes if logged in and question exists
+      // Fetch likes if logged in and question exists
       if (isLoggedIn && question) {
         const lRes = await fetch(`${API}/mylikes/${question.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (lRes.ok) myLikedAnswers = await lRes.json();
+
+        // ✅ Check if already answered by user_id (reliable even after profile change)
+        const aRes = await fetch(`${API}/myanswer/${question.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (aRes.ok) {
+          const { answered } = await aRes.json();
+          alreadyAnswered = answered;
+        }
       }
 
       renderActiveQuestion(question, answers);
@@ -236,9 +245,8 @@
     const hoursLeft = Math.max(0, Math.floor(msLeft / 3600000));
     const minsLeft  = Math.max(0, Math.floor((msLeft % 3600000) / 60000));
 
-    // ✅ FIX: check answered using myUsername, but only block if we actually know their username
-    const answeredAlready = isLoggedIn && myUsername &&
-      answers.some(a => a.username === myUsername);
+    // ✅ Use alreadyAnswered flag set by /myanswer API (reliable across username changes)
+    const answeredAlready = isLoggedIn && alreadyAnswered;
 
     el.innerHTML = `
       <div class="question-card">
@@ -360,7 +368,7 @@
                     <div style="margin-top:20px;padding:24px;background:rgba(255,43,214,0.05);border:1px solid rgba(255,43,214,0.18);border-radius:16px;">
                       <p style="font-size:15px;font-weight:500;color:rgba(255,255,255,0.9);margin-bottom:8px;">Your story is live ✨</p>
                       <p style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.7;margin-bottom:16px;">
-                        To View Your Story, Connect With Real People Or Experience The Full AdviceMe App?
+                        Want to get personalised advice, connect with real people and experience the full AdviceMe app?
                         Use the same credentials you just signed up with.
                       </p>
                       <a href="create-profile.html?redirect=discuss"
