@@ -74,6 +74,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const isComplete = profile.bio && profile.expertise;
 
       if (isComplete) {
+        // Profile fully complete — if they came from discuss, send back there
+        // Otherwise send to their dashboard
         if (cameFromDiscuss) {
           window.location.href = "discuss.html";
         } else {
@@ -161,14 +163,11 @@ form.addEventListener("submit", async (e) => {
     document.querySelectorAll('.step-item').forEach(i => i.classList.remove('active'));
     document.querySelector('#si3').classList.add('active');
 
-    // ✅ Redirect: back to discuss if came from there, otherwise giver/taker
+    // ✅ Redirect: after completing profile, always go to giver/taker dashboard
+    // Only go back to discuss if profile was already complete (they didn't need to fill anything)
     const userType = localStorage.getItem("user_type");
     setTimeout(() => {
-      if (cameFromDiscuss) {
-        window.location.href = "discuss.html";
-      } else {
-        window.location.href = userType === "giver" ? "giver.html" : "taker.html";
-      }
+      window.location.href = userType === "giver" ? "giver.html" : "taker.html";
     }, 600);
 
   } catch (err) {
