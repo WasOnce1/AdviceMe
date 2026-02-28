@@ -1,4 +1,9 @@
 const { Resend } = require("resend");
+
+console.log("📧 MAILER: Loading mailer.js...");
+console.log("📧 MAILER: RESEND_API_KEY present?", !!process.env.RESEND_API_KEY);
+console.log("📧 MAILER: RESEND_API_KEY starts with:", process.env.RESEND_API_KEY?.substring(0, 8));
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM = "AdviceMe <notifications@adviceme.social>";
@@ -161,9 +166,12 @@ async function notifyAnswerLiked({ authorEmail, authorUsername, likerUsername, q
    5. NEW DAILY PULSE QUESTION → notify all users
    ============================================================ */
 async function notifyAllUsersNewPulse({ emails, questionText, questionSlug }) {
-  if (!emails?.length) return;
+  console.log("📧 notifyAllUsersNewPulse called with", emails?.length, "emails");
+  if (!emails?.length) {
+    console.log("📧 No emails to send — aborting");
+    return;
+  }
 
-  // Resend supports batch sending — send in chunks of 50
   const chunks = [];
   for (let i = 0; i < emails.length; i += 50) {
     chunks.push(emails.slice(i, i + 50));
@@ -171,6 +179,7 @@ async function notifyAllUsersNewPulse({ emails, questionText, questionSlug }) {
 
   for (const chunk of chunks) {
     try {
+      console.log("📧 Sending batch of", chunk.length, "emails...");
       const batch = chunk.map(({ email, username }) => ({
         from: FROM,
         to: email,
@@ -186,9 +195,10 @@ async function notifyAllUsersNewPulse({ emails, questionText, questionSlug }) {
           <p class="body-text" style="font-size:13px;">The discussion closes in 24 hours. Don't miss it.</p>
         `)
       }));
-      await resend.emails.send(batch);
+      const result = await resend.emails.send(batch);
+      console.log("📧 Batch send result:", JSON.stringify(result));
     } catch(e) {
-      console.error("Email error [notifyAllUsersNewPulse]:", e.message);
+      console.error("📧 EMAIL error [notifyAllUsersNewPulse]:", e.message, e);
     }
   }
 }
