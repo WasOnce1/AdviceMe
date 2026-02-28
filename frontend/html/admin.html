@@ -425,12 +425,13 @@
     const hEl = document.getElementById("pulseHistory");
     if (!history.length) { hEl.innerHTML = `<div class="no-answers">no past questions yet</div>`; return; }
     hEl.innerHTML = history.map(q => `
-      <div class="history-item">
+      <div class="history-item" id="question-${q.id}">
         <div class="history-q">"${q.question_text}"</div>
         <div class="history-meta">
           <div>${q.answer_count} answers</div>
           <div>${new Date(q.created_at).toLocaleDateString()}</div>
           <div style="color:${q.is_active?'var(--green)':'var(--text-dim)'};">${q.is_active ? '● LIVE' : 'ARCHIVED'}</div>
+          ${!q.is_active ? `<button class="btn btn-remove" onclick="deleteQuestion(${q.id}, this)">🗑 DELETE</button>` : ''}
         </div>
       </div>`).join("");
   }
@@ -490,6 +491,20 @@
       const countEl  = document.getElementById("activeAnswerCount");
       const current  = parseInt(countEl.innerText) || 0;
       countEl.innerText = `${Math.max(0, current - 1)} ANSWERS`;
+    } else {
+      alert("Error: " + data.message);
+    }
+  }
+
+  // ✅ NEW: delete entire question + all its answers
+  async function deleteQuestion(questionId, btn) {
+    if (!confirm("Delete this entire question and ALL its answers? This cannot be undone.")) return;
+    const res = await fetch(`${PULSE}/admin/question/${questionId}`, {
+      method: "DELETE", headers
+    });
+    const data = await res.json();
+    if (res.ok) {
+      btn.closest(".history-item").remove();
     } else {
       alert("Error: " + data.message);
     }

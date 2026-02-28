@@ -225,4 +225,22 @@ router.put("/pulse/best/:answerId", adminAuth, (req, res) => {
   });
 });
 
+/* DELETE entire archived question + all answers + likes */
+router.delete("/pulse/question/:questionId", adminAuth, (req, res) => {
+  const { questionId } = req.params;
+
+  // Delete in order: likes → answers → question
+  db.query("DELETE dal FROM daily_answer_likes dal JOIN daily_answers da ON da.id = dal.answer_id WHERE da.question_id = ?", [questionId], (err) => {
+    if (err) return res.status(500).json({ message: "DB error deleting likes" });
+    db.query("DELETE FROM daily_answers WHERE question_id = ?", [questionId], (err) => {
+      if (err) return res.status(500).json({ message: "DB error deleting answers" });
+      db.query("DELETE FROM daily_questions WHERE id = ? AND is_active = 0", [questionId], (err, result) => {
+        if (err) return res.status(500).json({ message: "DB error deleting question" });
+        if (result.affectedRows === 0) return res.status(403).json({ message: "Cannot delete an active question" });
+        res.json({ message: "Question deleted successfully" });
+      });
+    });
+  });
+});
+
 module.exports = { router, adminAuth };
