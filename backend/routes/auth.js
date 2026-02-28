@@ -54,16 +54,50 @@ router.post("/signup", async (req, res) => {
       VALUES (?, ?, ?, ?)
     `;
 
-    db.query(sql, [email, hashedPassword, user_type, preference], (err) => {
+    db.query(sql, [email, hashedPassword, user_type, preference], (err, result) => {
       if (err) {
-        // Only return "user already exists" for duplicate entry errors
         if (err.code === "ER_DUP_ENTRY") {
           return res.status(409).json({ message: "User already exists" });
         }
-        // Log and return the real error for everything else
         logger.error("Signup DB error", { email, error: err.message, code: err.code });
         return res.status(500).json({ message: "Signup failed: " + err.message });
       }
+
+      const userId = result.insertId;
+
+      // ✅ Auto-create a basic profile for non-anonymous users
+      // This ensures they get a real username immediately
+      // Username = part before @ in email, made URL-safe
+      if (preference === "non_anonymous") {
+        const autoUsername = email
+          .split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9_]/g, "_")
+          .substring(0, 30);
+
+        // Check if username already taken, if so append user id
+        db.query(
+          "SELECT id FROM profiles WHERE username = ?",
+          [autoUsername],
+          (err, existing) => {
+            if (err) return; // silent — profile creation is best-effort
+
+            const finalUsername = existing.length
+              ? `${autoUsername}_${userId}`
+              : autoUsername;
+
+            db.query(
+              "INSERT INTO profiles (user_id, username) VALUES (?, ?)",
+              [userId, finalUsername],
+              (err) => {
+                if (err) logger.warn("Auto-profile creation failed", { userId, error: err.message });
+                else logger.info("Auto-profile created", { userId, username: finalUsername });
+              }
+            );
+          }
+        );
+      }
+
       res.status(201).json({ message: "Signup successful" });
     });
   } catch (err) {
