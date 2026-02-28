@@ -140,9 +140,13 @@ async function notifyBestAdviceWinner({ winnerEmail, winnerUsername, questionTex
    4. SOMEONE LIKED YOUR ANSWER → notify author
    ============================================================ */
 async function notifyAnswerLiked({ authorEmail, authorUsername, likerUsername, questionText, likeCount }) {
-  if (!authorEmail) return;
+  console.log("📧 notifyAnswerLiked called — to:", authorEmail, "from:", likerUsername);
+  if (!authorEmail) {
+    console.log("📧 notifyAnswerLiked: no email — aborting");
+    return;
+  }
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: FROM,
       to: authorEmail,
       subject: `${likerUsername || "Someone"} loved your story ❤️`,
@@ -157,6 +161,7 @@ async function notifyAnswerLiked({ authorEmail, authorUsername, likerUsername, q
         <a href="${BASE_URL}/discuss.html" class="cta-btn">See the Discussion →</a>
       `)
     });
+    console.log("📧 notifyAnswerLiked result:", JSON.stringify(result));
   } catch(e) {
     console.error("Email error [notifyAnswerLiked]:", e.message);
   }

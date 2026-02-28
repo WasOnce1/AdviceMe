@@ -142,15 +142,33 @@ router.post("/like/:answerId", authMiddleware, (req, res) => {
                WHERE da.id = ? LIMIT 1`,
               [answerId],
               (err, rows) => {
-                if (!err && rows.length && rows[0].author_email && rows[0].author !== username) {
-                  notifyAnswerLiked({
-                    authorEmail:    rows[0].author_email,
-                    authorUsername: rows[0].author,
-                    likerUsername:  username,
-                    questionText:   rows[0].question_text,
-                    likeCount:      rows[0].likes
-                  });
+                if (err) {
+                  console.error("📧 LIKE email query error:", err.message);
+                  return;
                 }
+                console.log("📧 LIKE email query rows:", JSON.stringify(rows));
+                if (!rows.length) {
+                  console.log("📧 LIKE: no answer found for id", answerId);
+                  return;
+                }
+                const row = rows[0];
+                console.log("📧 LIKE: author=", row.author, "email=", row.author_email, "liker=", username);
+                if (!row.author_email) {
+                  console.log("📧 LIKE: skipping — author has no email");
+                  return;
+                }
+                if (row.author === username) {
+                  console.log("📧 LIKE: skipping — author liked their own answer");
+                  return;
+                }
+                console.log("📧 LIKE: sending email to", row.author_email);
+                notifyAnswerLiked({
+                  authorEmail:    row.author_email,
+                  authorUsername: row.author,
+                  likerUsername:  username,
+                  questionText:   row.question_text,
+                  likeCount:      row.likes
+                });
               }
             );
 
