@@ -137,7 +137,8 @@ router.post("/like/:answerId", authMiddleware, (req, res) => {
                       dq.question_text
                FROM daily_answers da
                JOIN daily_questions dq ON dq.id = da.question_id
-               LEFT JOIN users u ON u.username = da.username
+               LEFT JOIN profiles p ON p.username = da.username
+               LEFT JOIN users u ON u.id = p.user_id
                WHERE da.id = ? LIMIT 1`,
               [answerId],
               (err, rows) => {

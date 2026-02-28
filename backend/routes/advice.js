@@ -46,10 +46,12 @@ router.post("/respond", authMiddleware, (req, res) => {
     db.query(
       `SELECT u.email, ur.username, ur.category
        FROM user_requests ur
-       JOIN users u ON u.username = ur.username
+       JOIN profiles p ON p.username = ur.username
+       JOIN users u ON u.id = p.user_id
        WHERE ur.track_id = ? LIMIT 1`,
       [track_id],
       (err, rows) => {
+        if (err) console.error("📧 EMAIL taker lookup error:", err.message);
         if (!err && rows.length) {
           notifyTakerNewAdvice({
             takerEmail:    rows[0].email,
@@ -58,6 +60,8 @@ router.post("/respond", authMiddleware, (req, res) => {
             category:      rows[0].category,
             advicePreview: advice_text
           });
+        } else {
+          console.log("📧 EMAIL: taker not found for track_id", track_id);
         }
       }
     );
@@ -150,10 +154,12 @@ router.post("/action", authMiddleware, (req, res) => {
           `SELECT u.email, ua.giver_username, ur.category
            FROM user_advice ua
            JOIN user_requests ur ON ua.track_id = ur.track_id
-           JOIN users u ON u.username = ua.giver_username
+           JOIN profiles p ON p.username = ua.giver_username
+           JOIN users u ON u.id = p.user_id
            WHERE ua.id = ? LIMIT 1`,
           [adviceId],
           (err, rows) => {
+            if (err) console.error("📧 EMAIL giver lookup error:", err.message);
             if (!err && rows.length) {
               notifyGiverChatActive({
                 giverEmail:    rows[0].email,
@@ -161,6 +167,8 @@ router.post("/action", authMiddleware, (req, res) => {
                 takerUsername: username,
                 category:      rows[0].category
               });
+            } else {
+              console.log("📧 EMAIL: giver not found for adviceId", adviceId);
             }
           }
         );

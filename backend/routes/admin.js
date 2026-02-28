@@ -162,15 +162,26 @@ router.post("/pulse/post", adminAuth, (req, res) => {
         if (err) return res.status(500).json({ message: "DB error: " + err.message });
 
         // ✅ EMAIL: notify all users about new daily question
-        db.query("SELECT email, username FROM users WHERE banned = 0 OR banned IS NULL", (err, users) => {
-          if (!err && users.length) {
-            notifyAllUsersNewPulse({
-              emails: users.map(u => ({ email: u.email, username: u.username })),
-              questionText: question_text,
-              questionSlug: question_slug
-            });
+        // username lives in profiles table, not users
+        db.query(
+          `SELECT u.email, COALESCE(p.username, u.email) AS username
+           FROM users u
+           LEFT JOIN profiles p ON p.user_id = u.id`,
+          (err, users) => {
+            if (err) {
+              console.error("📧 EMAIL: failed to fetch users for pulse notification", err.message);
+              return;
+            }
+            console.log(`📧 EMAIL: sending Daily Pulse notification to ${users.length} users`);
+            if (users.length) {
+              notifyAllUsersNewPulse({
+                emails: users.map(u => ({ email: u.email, username: u.username })),
+                questionText: question_text,
+                questionSlug: question_slug
+              });
+            }
           }
-        });
+        );
 
         res.json({ message: "Question posted successfully", id: result.insertId });
       }
@@ -236,10 +247,12 @@ router.put("/pulse/best/:answerId", adminAuth, (req, res) => {
               `SELECT u.email, dq.question_text
                FROM daily_answers da
                JOIN daily_questions dq ON dq.id = da.question_id
-               JOIN users u ON u.username = da.username
+               JOIN profiles p ON p.username = da.username
+               JOIN users u ON u.id = p.user_id
                WHERE da.id = ? LIMIT 1`,
               [answerId],
               (err, rows) => {
+                if (err) console.error("📧 EMAIL best advice lookup error:", err.message);
                 if (!err && rows.length) {
                   notifyBestAdviceWinner({
                     winnerEmail:    rows[0].email,
