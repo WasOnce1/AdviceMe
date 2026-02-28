@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../db");
+const { notifyBestAdviceWinner, notifyAllUsersNewPulse } = require("../mailer");
 
 const router = express.Router();
 
@@ -159,6 +160,18 @@ router.post("/pulse/post", adminAuth, (req, res) => {
       [question_text, question_slug, expires_at],
       (err, result) => {
         if (err) return res.status(500).json({ message: "DB error: " + err.message });
+
+        // ✅ EMAIL: notify all users about new daily question
+        db.query("SELECT email, username FROM users WHERE banned = 0 OR banned IS NULL", (err, users) => {
+          if (!err && users.length) {
+            notifyAllUsersNewPulse({
+              emails: users.map(u => ({ email: u.email, username: u.username })),
+              questionText: question_text,
+              questionSlug: question_slug
+            });
+          }
+        });
+
         res.json({ message: "Question posted successfully", id: result.insertId });
       }
     );
@@ -217,6 +230,26 @@ router.put("/pulse/best/:answerId", adminAuth, (req, res) => {
           [answer.username],
           (err) => {
             if (err) return res.status(500).json({ message: "DB error" });
+
+            // ✅ EMAIL: notify winner they got Best Advice
+            db.query(
+              `SELECT u.email, dq.question_text
+               FROM daily_answers da
+               JOIN daily_questions dq ON dq.id = da.question_id
+               JOIN users u ON u.username = da.username
+               WHERE da.id = ? LIMIT 1`,
+              [answerId],
+              (err, rows) => {
+                if (!err && rows.length) {
+                  notifyBestAdviceWinner({
+                    winnerEmail:    rows[0].email,
+                    winnerUsername: answer.username,
+                    questionText:   rows[0].question_text
+                  });
+                }
+              }
+            );
+
             res.json({ message: `Best Advice awarded to ${answer.username} 🏆` });
           }
         );

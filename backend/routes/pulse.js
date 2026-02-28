@@ -2,6 +2,7 @@ const express = require("express");
 const db = require("../db");
 const authMiddleware = require("../middleware/authmiddleware");
 const { adminAuth } = require("./admin");
+const { notifyAnswerLiked, notifyBestAdviceWinner, notifyAllUsersNewPulse } = require("../mailer");
 
 const router = express.Router();
 
@@ -128,6 +129,30 @@ router.post("/like/:answerId", authMiddleware, (req, res) => {
           if (err) return res.status(500).json({ message: "DB error" });
           db.query("UPDATE daily_answers SET likes = likes + 1 WHERE id = ?", [answerId], (err) => {
             if (err) return res.status(500).json({ message: "DB error" });
+
+            // ✅ EMAIL: notify answer author that someone liked their answer
+            db.query(
+              `SELECT da.username AS author, da.likes,
+                      u.email AS author_email,
+                      dq.question_text
+               FROM daily_answers da
+               JOIN daily_questions dq ON dq.id = da.question_id
+               LEFT JOIN users u ON u.username = da.username
+               WHERE da.id = ? LIMIT 1`,
+              [answerId],
+              (err, rows) => {
+                if (!err && rows.length && rows[0].author_email && rows[0].author !== username) {
+                  notifyAnswerLiked({
+                    authorEmail:    rows[0].author_email,
+                    authorUsername: rows[0].author,
+                    likerUsername:  username,
+                    questionText:   rows[0].question_text,
+                    likeCount:      rows[0].likes
+                  });
+                }
+              }
+            );
+
             res.json({ liked: true });
           });
         });
