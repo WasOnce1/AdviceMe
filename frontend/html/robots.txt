@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /discuss.html
+Allow: /login.html
+Allow: /giver.html
+Allow: /taker.html
+Disallow: /admin.html
+Disallow: /root-access.html
+Disallow: /chat.html
+Disallow: /create-profile.html
+
+Sitemap: https://adviceme.social/sitemap.xml
