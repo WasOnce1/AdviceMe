@@ -1,276 +1,207 @@
-document.addEventListener("DOMContentLoaded", async () => {
+const express = require("express");
+const db = require("../db");
+const authMiddleware = require("../middleware/authmiddleware");
+const logger = require("../logger");
 
-  const chatList     = document.getElementById("chatList");
-  const chatWindow   = document.getElementById("chatWindow");
-  const emptyState   = document.getElementById("emptyState");
-  const chatMessages = document.getElementById("chatMessages");
-  const chatUsername = document.getElementById("chatUsername");
-  const chatAvatar   = document.getElementById("chatAvatar");
-  const chatHeader   = document.getElementById("chatHeader");
-  const sendBtn      = document.getElementById("sendBtn");
-  const messageInput = document.getElementById("messageInput");
-  const backBtn      = document.getElementById("backBtn");
-  const chatListPanel = document.getElementById("chatListPanel");
+const router = express.Router();
 
-  const profileOverlay     = document.getElementById("profileOverlay");
-  const closePopup         = document.getElementById("closePopup");
-  const popupImg           = document.getElementById("popupImg");
-  const popupUsername      = document.getElementById("popupUsername");
-  const popupExpertise     = document.getElementById("popupExpertise");
-  const popupBio           = document.getElementById("popupBio");
-  const popupBadge         = document.getElementById("popupBadge");
-  const removeRecipientBtn = document.getElementById("removeRecipientBtn");
+/* ================= HELPER ================= */
+function resolveUsername(req) {
+  return req.user.username?.trim() || `anon_${req.user.id}`;
+}
 
-  const enlargeOverlay = document.getElementById("enlargeOverlay");
-  const enlargedImg    = document.getElementById("enlargedImg");
+/* ================= LIST ACTIVE CHATS ================= */
+router.get("/list", authMiddleware, (req, res) => {
+  const username = resolveUsername(req);
 
-  const token = localStorage.getItem("token");
-  if (!token) return alert("Not authenticated");
+  const sql = `
+    SELECT 
+      ua.id AS advice_id,
+      ua.giver_username AS giver,
+      ur.username AS taker,
+      gp.profile_image_url AS giver_image,
+      tp.profile_image_url AS taker_image
+    FROM user_advice ua
+    JOIN user_requests ur ON ua.track_id = ur.track_id
+    LEFT JOIN profiles gp ON gp.username = ua.giver_username
+    LEFT JOIN profiles tp ON tp.username = ur.username
+    WHERE ua.chat_status = 'ACTIVE'
+      AND (ua.giver_username = ? OR ur.username = ?)
+    ORDER BY ua.created_at DESC
+  `;
 
-  const params  = new URLSearchParams(window.location.search);
-  let adviceId  = params.get("adviceId");
+  db.query(sql, [username, username], (err, rows) => {
+    if (err) {
+      logger.error("Failed to list chats", { username, error: err.message });
+      return res.status(500).json({ message: "DB error" });
+    }
 
-  let myUsername    = null;
-  let otherUsername = null;
+    const result = rows.map(row => {
+      const giver   = row.giver?.trim();
+      const taker   = row.taker?.trim();
+      const isGiver = username === giver;
+      return {
+        advice_id:      row.advice_id,
+        giver,
+        taker,
+        other_username: isGiver ? taker : giver,
+        other_image:    isGiver ? row.taker_image : row.giver_image
+      };
+    });
 
-  /* ================= FETCH MY USERNAME ================= */
-  const meRes  = await fetch("https://api.adviceme.social/api/profile/me", {
-    headers: { Authorization: `Bearer ${token}` }
+    res.json(result);
   });
-  const meData = await meRes.json();
-  myUsername   = meData.username;
-
-  /* ================= MOBILE NAV ================= */
-  function openChat() {
-    chatListPanel.classList.add("hidden-mobile");
-    chatWindow.classList.add("visible-mobile");
-  }
-
-  function closeChat() {
-    chatListPanel.classList.remove("hidden-mobile");
-    chatWindow.classList.remove("visible-mobile");
-  }
-
-  backBtn.onclick = closeChat;
-
-  /* ================= LOAD CHAT LIST ================= */
-  async function loadChatList() {
-    try {
-      const res   = await fetch("https://api.adviceme.social/api/chat/list", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) throw new Error("Failed");
-
-      const chats = await res.json();
-      chatList.innerHTML = "";
-
-      if (!chats.length) {
-        chatList.innerHTML = `
-          <div style="padding:24px 22px; text-align:center; color:rgba(255,255,255,0.35);">
-            <div style="font-size:32px; margin-bottom:10px;">💭</div>
-            <p style="font-size:13px;">No active chats yet</p>
-          </div>`;
-        return;
-      }
-
-      chats.forEach(chat => {
-        const div = document.createElement("div");
-        div.className = "chat-preview";
-        if (chat.advice_id == adviceId) div.classList.add("active");
-
-        div.innerHTML = `
-          <img src="${chat.other_image || 'images/default.png'}" class="avatar" />
-          <div class="preview-text">
-            <h4>${chat.other_username}</h4>
-            <p>Active conversation</p>
-          </div>
-        `;
-
-        div.onclick = () => {
-          document.querySelectorAll(".chat-preview").forEach(p => p.classList.remove("active"));
-          div.classList.add("active");
-          adviceId = chat.advice_id;
-          loadChat();
-          if (window.innerWidth <= 768) openChat();
-        };
-
-        chatList.appendChild(div);
-      });
-
-    } catch (err) {
-      console.error("Chat list error", err);
-    }
-  }
-
-  /* ================= LOAD CHAT ================= */
-  async function loadChat() {
-    if (!adviceId) return;
-
-    try {
-      const res = await fetch(`https://api.adviceme.social/api/chat/${adviceId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) {
-        emptyState.innerText = "Chat not available";
-        return;
-      }
-
-      const data = await res.json();
-      otherUsername = data.otherUsername;
-
-      emptyState.style.display  = "none";
-      chatWindow.classList.remove("hidden");
-      chatUsername.innerText    = otherUsername;
-      chatAvatar.src            = data.otherImage || "images/default.png";
-
-      // Clear messages but keep start label
-      chatMessages.innerHTML = `<div class="messages-start-label">Start of conversation</div>`;
-
-      data.initialMessages?.forEach(msg => appendMessage(msg.sender, msg.message));
-      data.messages?.forEach(msg => appendMessage(msg.sender, msg.message));
-
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    } catch (err) {
-      console.error("Load chat error", err);
-    }
-  }
-
-  /* ================= APPEND MESSAGE ================= */
-  function appendMessage(sender, text) {
-    const div = document.createElement("div");
-    div.className = sender === myUsername ? "message taker" : "message giver";
-    div.innerText = text;
-    chatMessages.appendChild(div);
-  }
-
-  /* ================= SEND MESSAGE ================= */
-  async function sendMessage() {
-    const text = messageInput.value.trim();
-    if (!text) return;
-
-    try {
-      const res = await fetch("https://api.adviceme.social/api/chat/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ adviceId, message: text })
-      });
-
-      if (!res.ok) throw new Error("Send failed");
-
-      appendMessage(myUsername, text);
-      messageInput.value = "";
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    } catch (err) {
-      alert("Message not sent");
-    }
-  }
-
-  sendBtn.onclick = sendMessage;
-
-  // Send on Enter key
-  messageInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-
-  /* ================= VIEW PROFILE (header click) ================= */
-  chatHeader.onclick = async (e) => {
-    if (e.target === backBtn || backBtn.contains(e.target)) return;
-    if (!otherUsername) return;
-
-    try {
-      const profileRes = await fetch(`https://api.adviceme.social/api/profile/view/${otherUsername}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!profileRes.ok) return;
-
-      const data = await profileRes.json();
-
-      popupImg.src             = data.profile_image_url || "images/default.png";
-      popupUsername.innerText  = data.username || otherUsername;
-      popupExpertise.innerText = data.expertise ? `🎯 ${data.expertise}` : "";
-      popupBio.innerText       = data.bio || (data.preference === "anonymous" ? "Anonymous user" : "No bio available");
-
-      // Show badge only if the person is a giver (user_type = 'giver')
-      if (data.user_type === 'giver') {
-        try {
-          const badgeRes  = await fetch(`https://api.adviceme.social/api/badge/user/${otherUsername}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          const badgeData = badgeRes.ok ? await badgeRes.json() : null;
-          if (badgeData) {
-            popupBadge.innerHTML     = `<span>${badgeData.badge_icon}</span><span>${badgeData.badge_level}</span>`;
-            popupBadge.style.display = "flex";
-          } else {
-            popupBadge.style.display = "none";
-          }
-        } catch {
-          popupBadge.style.display = "none";
-        }
-      } else {
-        popupBadge.style.display = "none";
-      }
-
-      profileOverlay.classList.remove("hidden");
-
-    } catch (err) {
-      console.error("Failed to load profile", err);
-    }
-  };
-
-  /* ================= ENLARGE AVATAR ================= */
-  popupImg.onclick = (e) => {
-    e.stopPropagation();
-    enlargedImg.src = popupImg.src;
-    enlargeOverlay.classList.remove("hidden");
-  };
-
-  enlargeOverlay.onclick = () => enlargeOverlay.classList.add("hidden");
-
-  /* ================= REMOVE RECIPIENT ================= */
-  removeRecipientBtn.onclick = async () => {
-    if (!adviceId) return;
-
-    const confirmed = confirm(`Remove ${otherUsername} from this chat? This cannot be undone.`);
-    if (!confirmed) return;
-
-    try {
-      const res = await fetch(`https://api.adviceme.social/api/chat/remove/${adviceId}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) { alert("Failed to remove recipient"); return; }
-
-      alert("Recipient removed.");
-      window.location.href = "chat.html";
-
-    } catch (err) {
-      alert("Something went wrong");
-    }
-  };
-
-  /* ================= CLOSE POPUP ================= */
-  closePopup.onclick = () => profileOverlay.classList.add("hidden");
-
-  profileOverlay.onclick = (e) => {
-    if (e.target === profileOverlay) profileOverlay.classList.add("hidden");
-  };
-
-  /* ================= INIT ================= */
-  await loadChatList();
-  await loadChat();
-
-  // Auto open on mobile if adviceId in URL
-  if (adviceId && window.innerWidth <= 768) openChat();
 });
+
+/* ================= LOAD CHAT ================= */
+router.get("/:adviceId", authMiddleware, (req, res) => {
+  const { adviceId } = req.params;
+  const username = resolveUsername(req);
+
+  const chatSql = `
+    SELECT 
+      ua.giver_username AS giver,
+      ur.username AS taker,
+      ur.request_text,
+      ua.advice_text,
+      gp.profile_image_url AS giver_image,
+      tp.profile_image_url AS taker_image
+    FROM user_advice ua
+    JOIN user_requests ur ON ua.track_id = ur.track_id
+    LEFT JOIN profiles gp ON gp.username = ua.giver_username
+    LEFT JOIN profiles tp ON tp.username = ur.username
+    WHERE ua.id = ?
+      AND ua.chat_status = 'ACTIVE'
+  `;
+
+  db.query(chatSql, [adviceId], (err, rows) => {
+    if (err) {
+      logger.error("Failed to load chat", { adviceId, username, error: err.message });
+      return res.status(500).json({ message: "DB error" });
+    }
+    if (!rows.length) {
+      logger.warn("Chat not found or inactive", { adviceId, username });
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    const row   = rows[0];
+    const giver = row.giver?.trim();
+    const taker = row.taker?.trim();
+
+    const isGiver       = username === giver;
+    const myUsername    = isGiver ? giver : taker;
+    const otherUsername = isGiver ? taker : giver;
+    const otherImage    = isGiver ? row.taker_image : row.giver_image;
+
+    const msgSql = `
+      SELECT sender, message
+      FROM chat_messages
+      WHERE advice_id = ?
+      ORDER BY created_at ASC
+    `;
+
+    db.query(msgSql, [adviceId], (err, messages) => {
+      if (err) {
+        logger.error("Failed to load messages", { adviceId, error: err.message });
+        return res.status(500).json({ message: "DB error" });
+      }
+
+      const cleanMessages = messages.map(m => ({
+        sender:  m.sender?.trim(),
+        message: m.message
+      }));
+
+      res.json({
+        giver,
+        taker,
+        myUsername,
+        otherUsername,
+        otherImage,
+        initialMessages: [
+          { sender: taker, message: row.request_text },
+          { sender: giver, message: row.advice_text }
+        ],
+        messages: cleanMessages
+      });
+    });
+  });
+});
+
+/* ================= SEND MESSAGE ================= */
+router.post("/send", authMiddleware, (req, res) => {
+  const { adviceId, message } = req.body;
+
+  if (!adviceId || !message)
+    return res.status(400).json({ message: "Missing fields" });
+
+  const username = resolveUsername(req);
+
+  const sql = `
+    INSERT INTO chat_messages (advice_id, sender, message)
+    VALUES (?, ?, ?)
+  `;
+
+  db.query(sql, [adviceId, username, message], err => {
+    if (err) {
+      logger.error("Failed to send message", { adviceId, error: err.message });
+      return res.status(500).json({ message: "DB error" });
+    }
+    res.json({ message: "Message sent" });
+  });
+});
+
+/* ================= REMOVE RECIPIENT ================= */
+router.put("/remove/:adviceId", authMiddleware, (req, res) => {
+  const { adviceId } = req.params;
+  const username = resolveUsername(req);
+
+  const checkSql = `
+    SELECT ua.id
+    FROM user_advice ua
+    JOIN user_requests ur ON ua.track_id = ur.track_id
+    WHERE ua.id = ?
+      AND (ua.giver_username = ? OR ur.username = ?)
+      AND ua.chat_status = 'ACTIVE'
+  `;
+
+  db.query(checkSql, [adviceId, username, username], (err, rows) => {
+    if (err) {
+      logger.error("Chat remove auth check failed", { adviceId, username, error: err.message });
+      return res.status(500).json({ message: "DB error" });
+    }
+    if (!rows.length) return res.status(403).json({ message: "Unauthorized or chat not found" });
+
+    db.query(
+      "UPDATE user_advice SET chat_status = 'REMOVED' WHERE id = ?",
+      [adviceId],
+      (err) => {
+        if (err) {
+          logger.error("Failed to remove chat", { adviceId, error: err.message });
+          return res.status(500).json({ message: "DB error" });
+        }
+        res.json({ message: "Recipient removed successfully" });
+      }
+    );
+  });
+});
+
+module.exports = router;
+  /* ================= MOBILE KEYBOARD FIX ================= */
+  // When keyboard opens on mobile, scroll messages to bottom
+  // so the last message stays visible above the input bar
+  if (window.innerWidth <= 768) {
+    messageInput.addEventListener("focus", () => {
+      setTimeout(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 300); // wait for keyboard animation
+    });
+
+    // Also handle iOS visual viewport resize
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", () => {
+        setTimeout(() => {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
+      });
+    }
+  }
