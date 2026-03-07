@@ -33,14 +33,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   let myUsername    = null;
   let otherUsername = null;
 
-  /* ================= FETCH MY USERNAME ================= */
   const meRes  = await fetch("https://api.adviceme.social/api/profile/me", {
     headers: { Authorization: `Bearer ${token}` }
   });
   const meData = await meRes.json();
   myUsername   = meData.username;
 
-  /* ================= MOBILE NAV ================= */
   function openChat() {
     chatListPanel.classList.add("hidden-mobile");
     chatWindow.classList.add("visible-mobile");
@@ -53,7 +51,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   backBtn.onclick = closeChat;
 
-  /* ================= LOAD CHAT LIST ================= */
   async function loadChatList() {
     try {
       const res   = await fetch("https://api.adviceme.social/api/chat/list", {
@@ -103,7 +100,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  /* ================= LOAD CHAT ================= */
   async function loadChat() {
     if (!adviceId) return;
 
@@ -125,7 +121,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       chatUsername.innerText    = otherUsername;
       chatAvatar.src            = data.otherImage || "images/default.png";
 
-      // Clear messages but keep start label
       chatMessages.innerHTML = `<div class="messages-start-label">Start of conversation</div>`;
 
       data.initialMessages?.forEach(msg => appendMessage(msg.sender, msg.message));
@@ -138,7 +133,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  /* ================= APPEND MESSAGE ================= */
   function appendMessage(sender, text) {
     const div = document.createElement("div");
     div.className = sender === myUsername ? "message taker" : "message giver";
@@ -146,7 +140,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     chatMessages.appendChild(div);
   }
 
-  /* ================= SEND MESSAGE ================= */
   async function sendMessage() {
     const text = messageInput.value.trim();
     if (!text) return;
@@ -174,7 +167,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   sendBtn.onclick = sendMessage;
 
-  // Send on Enter key
   messageInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -182,7 +174,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  /* ================= VIEW PROFILE (header click) ================= */
   chatHeader.onclick = async (e) => {
     if (e.target === backBtn || backBtn.contains(e.target)) return;
     if (!otherUsername) return;
@@ -201,7 +192,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       popupExpertise.innerText = data.expertise ? `🎯 ${data.expertise}` : "";
       popupBio.innerText       = data.bio || (data.preference === "anonymous" ? "Anonymous user" : "No bio available");
 
-      // Show badge only if the person is a giver (user_type = 'giver')
       if (data.user_type === 'giver') {
         try {
           const badgeRes  = await fetch(`https://api.adviceme.social/api/badge/user/${otherUsername}`, {
@@ -228,7 +218,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
-  /* ================= ENLARGE AVATAR ================= */
   popupImg.onclick = (e) => {
     e.stopPropagation();
     enlargedImg.src = popupImg.src;
@@ -237,7 +226,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   enlargeOverlay.onclick = () => enlargeOverlay.classList.add("hidden");
 
-  /* ================= REMOVE RECIPIENT ================= */
   removeRecipientBtn.onclick = async () => {
     if (!adviceId) return;
 
@@ -260,17 +248,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
-  /* ================= CLOSE POPUP ================= */
   closePopup.onclick = () => profileOverlay.classList.add("hidden");
 
   profileOverlay.onclick = (e) => {
     if (e.target === profileOverlay) profileOverlay.classList.add("hidden");
   };
 
-  /* ================= INIT ================= */
   await loadChatList();
   await loadChat();
 
-  // Auto open on mobile if adviceId in URL
   if (adviceId && window.innerWidth <= 768) openChat();
+
+  /* ================= ANDROID KEYBOARD FIX ================= */
+  if (window.visualViewport) {
+    const chatInput    = document.querySelector('.chat-input');
+    const chatMessages = document.getElementById('chatMessages');
+    window.visualViewport.addEventListener('resize', () => {
+      const offset = window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop;
+      chatInput.style.transform    = offset > 0 ? `translateY(-${offset}px)` : '';
+      chatMessages.style.marginBottom = offset > 0 ? `${offset}px` : '';
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+  }
 });
