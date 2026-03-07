@@ -122,7 +122,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!res.ok) { profileContent.innerHTML = `<p style="color:#ff8080; text-align:center;">Failed to load profile.</p>`; return; }
       const data = await res.json();
       if (data.preference === "anonymous") {
-        profileContent.innerHTML = `<div class="profile-view"><div style="font-size:56px; margin-bottom:10px;">👤</div><h2>Anonymous Profile</h2><p class="username-tag">@${data.username}</p><div class="info-item" style="width:100%; margin-top:10px; text-align:center;"><div class="info-value" style="opacity:0.65; font-size:13px;">Your identity is hidden.</div></div></div>`;
+        profileContent.innerHTML = `<div class="profile-view"><div style="font-size:56px; margin-bottom:10px;">👤</div><h2>Anonymous Profile</h2><p class="username-tag">@${data.username}</p><div class="info-item" style="width:100%; margin-top:10px; text-align:center;"><div class="info-value" style="opacity:0.65; font-size:13px;">Your identity is hidden.</div></div><button class="profile-logout-btn" id="logoutBtn" style="margin-top:14px; width:100%;">🚪 Logout</button></div>`;
+        document.getElementById("logoutBtn").onclick = () => { localStorage.removeItem("token"); localStorage.removeItem("user_type"); window.location.href = "login.html"; };
         return;
       }
       renderProfileView(data);
