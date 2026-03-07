@@ -8,18 +8,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeBtn       = document.getElementById("closeProfile");
   const profileContent = document.getElementById("profileContent");
 
-  const PROFILE_API = "http://localhost:3000/api/profile";
-  const REQUEST_API = "http://localhost:3000/api/requests";
-  const ADVICE_API  = "http://localhost:3000/api/advice";
+  const PROFILE_API = "https://api.adviceme.social/api/profile";
+  const REQUEST_API = "https://api.adviceme.social/api/requests";
+  const ADVICE_API  = "https://api.adviceme.social/api/advice";
 
-  const COOLDOWN_MS  = 30 * 60 * 1000; // 30 minutes
+  const COOLDOWN_MS  = 30 * 60 * 1000;
   const COOLDOWN_KEY = "last_request_time";
 
-  /* ================= CHAT BUTTON ================= */
   const chatBtn = document.getElementById("chatBtn");
   if (chatBtn) chatBtn.onclick = () => window.location.href = "chat.html";
 
-  /* ================= COOLDOWN LOGIC ================= */
   const formWrap     = document.getElementById("requestFormWrap");
   const cooldownWrap = document.getElementById("cooldownWrap");
   const cooldownTimer = document.getElementById("cooldownTimer");
@@ -43,9 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function startCooldownUI(remainingMs) {
     formWrap.classList.add("hidden");
     cooldownWrap.classList.remove("hidden");
-
     clearInterval(countdownInterval);
-
     function tick() {
       const rem = getRemainingMs();
       if (rem <= 0) {
@@ -55,20 +51,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       cooldownTimer.textContent = formatTime(rem);
-      // Progress bar — shrinks from 100% to 0%
       const pct = rem / COOLDOWN_MS;
       cooldownBar.style.transform = `scaleX(${pct})`;
     }
-
     tick();
     countdownInterval = setInterval(tick, 1000);
   }
 
-  // Check on page load if cooldown is still active
   const remaining = getRemainingMs();
   if (remaining > 0) startCooldownUI(remaining);
 
-  /* ================= CHAR COUNTER ================= */
   const requestText  = document.getElementById("requestText");
   const reqCharCount = document.getElementById("reqCharCount");
   if (requestText && reqCharCount) {
@@ -79,7 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ================= REQUEST SUBMIT ================= */
   const submitBtn = document.getElementById("submitRequest");
   const submitTxt = document.getElementById("submitTxt");
   const submitMsg = document.getElementById("submitMsg");
@@ -89,35 +80,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const urgencyEl = document.querySelector('input[name="urgency"]:checked');
     const urgency   = urgencyEl ? urgencyEl.value : "";
     const text      = requestText.value.trim();
-
     if (!category || !urgency || !text) {
       showSubmitMsg("Please fill in all fields before submitting.", "error");
       return;
     }
-
     submitBtn.disabled = true;
     submitTxt.textContent = "Sending...";
-
     try {
       const res = await fetch(`${REQUEST_API}/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ category, urgency, request_text: text })
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         showSubmitMsg(data.message || "Failed to submit request.", "error");
         submitBtn.disabled = false;
         submitTxt.textContent = "Send Request";
         return;
       }
-
-      // Save timestamp and start cooldown
       localStorage.setItem(COOLDOWN_KEY, Date.now().toString());
       startCooldownUI(COOLDOWN_MS);
-
     } catch {
       showSubmitMsg("Server error. Please try again.", "error");
       submitBtn.disabled = false;
@@ -131,30 +114,17 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { submitMsg.className = "submit-msg"; }, 4000);
   }
 
-  /* ================= VIEW PROFILE ================= */
   viewBtn.onclick = async () => {
     panel.classList.remove("hidden");
     profileContent.innerHTML = `<p style="color:rgba(255,255,255,0.6); text-align:center; padding:28px;">Loading...</p>`;
-
     try {
       const res = await fetch(`${PROFILE_API}/me`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) { profileContent.innerHTML = `<p style="color:#ff8080; text-align:center;">Failed to load profile.</p>`; return; }
-
       const data = await res.json();
-
       if (data.preference === "anonymous") {
-        profileContent.innerHTML = `
-          <div class="profile-view">
-            <div style="font-size:56px; margin-bottom:10px;">👤</div>
-            <h2>Anonymous Profile</h2>
-            <p class="username-tag">@${data.username}</p>
-            <div class="info-item" style="width:100%; margin-top:10px; text-align:center;">
-              <div class="info-value" style="opacity:0.65; font-size:13px;">Your identity is hidden.</div>
-            </div>
-          </div>`;
+        profileContent.innerHTML = `<div class="profile-view"><div style="font-size:56px; margin-bottom:10px;">👤</div><h2>Anonymous Profile</h2><p class="username-tag">@${data.username}</p><div class="info-item" style="width:100%; margin-top:10px; text-align:center;"><div class="info-value" style="opacity:0.65; font-size:13px;">Your identity is hidden.</div></div></div>`;
         return;
       }
-
       renderProfileView(data);
     } catch (err) {
       console.error(err);
@@ -165,7 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
   closeBtn.onclick = () => panel.classList.add("hidden");
   panel.onclick = (e) => { if (e.target === panel) panel.classList.add("hidden"); };
 
-  /* ================= RENDER PROFILE VIEW ================= */
   function renderProfileView(data) {
     profileContent.innerHTML = `
       <div class="profile-view">
@@ -195,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  /* ================= RENDER PROFILE EDIT ================= */
   function renderProfileEdit(data) {
     let newImageFile = null;
     profileContent.innerHTML = `
@@ -218,7 +186,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         <p class="profile-message" id="profileMessage"></p>
       </div>`;
-
     document.getElementById("avatarWrap").onclick = () => document.getElementById("picInput").click();
     document.getElementById("picInput").onchange = (e) => {
       const file = e.target.files[0];
@@ -234,28 +201,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const newBio      = document.getElementById("editBio").value.trim();
       const newHobbies  = document.getElementById("editHobbies").value.trim();
       const messageP    = document.getElementById("profileMessage");
-
       if (!newBio || !newHobbies) { messageP.textContent = "Bio and hobbies are required."; return; }
-
       const formData = new FormData();
       formData.append("username",  newUsername);
       formData.append("bio",       newBio);
       formData.append("expertise", newHobbies);
       if (newImageFile) formData.append("profilePic", newImageFile);
-
       const resUpdate = await fetch(`${PROFILE_API}/update`, {
         method: "PUT", headers: { Authorization: `Bearer ${token}` }, body: formData
       });
       const updateData = await resUpdate.json();
       if (!resUpdate.ok) { messageP.textContent = updateData.message || "Failed to update."; return; }
-
       renderProfileView({ ...data, username: newUsername || data.username, bio: newBio, expertise: newHobbies,
         profile_image_url: newImageFile ? document.getElementById("editAvatar").src : data.profile_image_url });
       setTimeout(() => { const msg = document.getElementById("profileMessage"); if (msg) msg.textContent = "✅ Profile updated!"; }, 50);
     };
   }
 
-  /* ================= LOAD MY ADVICE ================= */
   const chatContainer = document.getElementById("chatContainer");
   const actionModal   = document.getElementById("actionModal");
   let selectedAdviceId = null;
@@ -266,25 +228,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!res.ok) return;
     const data = await res.json();
     chatContainer.innerHTML = "";
-
     if (!data.length) {
-      chatContainer.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">💭</div>
-          <p>No advice yet</p>
-          <span>Once someone responds, it will appear here.</span>
-        </div>`;
+      chatContainer.innerHTML = `<div class="empty-state"><div class="empty-icon">💭</div><p>No advice yet</p><span>Once someone responds, it will appear here.</span></div>`;
       return;
     }
-
     data.forEach(item => {
       const card = document.createElement("div");
       card.className = "conversation-card";
-      card.innerHTML = `
-        <h4>${item.category.toUpperCase()}</h4>
-        <p><strong>You:</strong> ${item.request_text}</p>
-        <p><strong>Advice:</strong> ${item.advice_text}</p>
-        <span class="giver-name">— ${item.giver_username}</span>`;
+      card.innerHTML = `<h4>${item.category.toUpperCase()}</h4><p><strong>You:</strong> ${item.request_text}</p><p><strong>Advice:</strong> ${item.advice_text}</p><span class="giver-name">— ${item.giver_username}</span>`;
       card.onclick = () => { selectedAdviceId = item.id; selectedCard = card; actionModal.classList.remove("hidden"); };
       chatContainer.appendChild(card);
     });
