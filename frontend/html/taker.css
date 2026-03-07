@@ -648,3 +648,24 @@ body {
   line-height: 1.6;
   max-width: 300px;
 }
+
+/* ========== LOGOUT BUTTON ========== */
+.profile-logout-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,80,80,0.35);
+  background: rgba(255,60,60,0.1);
+  color: #ff8080;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.profile-logout-btn:hover {
+  background: rgba(255,60,60,0.25);
+  border-color: rgba(255,80,80,0.55);
+  transform: translateY(-1px);
+}

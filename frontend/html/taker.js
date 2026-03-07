@@ -8,9 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeBtn       = document.getElementById("closeProfile");
   const profileContent = document.getElementById("profileContent");
 
-  const PROFILE_API = "https://api.adviceme.social/api/profile";
-  const REQUEST_API = "https://api.adviceme.social/api/requests";
-  const ADVICE_API  = "https://api.adviceme.social/api/advice";
+  const PROFILE_API = "http://localhost:3000/api/profile";
+  const REQUEST_API = "http://localhost:3000/api/requests";
+  const ADVICE_API  = "http://localhost:3000/api/advice";
 
   const COOLDOWN_MS  = 30 * 60 * 1000; // 30 minutes
   const COOLDOWN_KEY = "last_request_time";
@@ -184,9 +184,15 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         </div>
         <button class="profile-edit-trigger" id="openEditBtn">✏️ Edit Profile</button>
+        <button class="profile-logout-btn" id="logoutBtn">🚪 Logout</button>
         <p class="profile-message" id="profileMessage"></p>
       </div>`;
     document.getElementById("openEditBtn").onclick = () => renderProfileEdit(data);
+    document.getElementById("logoutBtn").onclick = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user_type");
+      window.location.href = "login.html";
+    };
   }
 
   /* ================= RENDER PROFILE EDIT ================= */

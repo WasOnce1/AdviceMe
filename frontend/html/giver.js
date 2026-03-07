@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= LOAD GIVER STATS ================= */
   async function loadStats() {
     try {
-      const res  = await fetch("https://api.adviceme.social/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } });
+      const res  = await fetch("http://localhost:3000/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       const statResponded = document.getElementById("statResponded");
       const statBadge     = document.getElementById("statBadge");
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const res  = await fetch(
-        `https://api.adviceme.social/api/requests/category/${encodeURIComponent(category)}`,
+        `http://localhost:3000/api/requests/category/${encodeURIComponent(category)}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
   removeBtn.onclick = async () => {
     if (!activePerson) return;
     await fetch(
-      `https://api.adviceme.social/api/requests/remove/${activePerson.dataset.track}`,
+      `http://localhost:3000/api/requests/remove/${activePerson.dataset.track}`,
       { method: "PUT", headers: { Authorization: `Bearer ${token}` } }
     );
     activePerson.remove();
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     respondBtn.innerHTML = `<span>Sending...</span>`;
 
     try {
-      const res = await fetch("https://api.adviceme.social/api/advice/respond", {
+      const res = await fetch("http://localhost:3000/api/advice/respond", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -225,8 +225,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const [profileRes, badgeRes] = await Promise.all([
-        fetch("https://api.adviceme.social/api/profile/me",      { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("https://api.adviceme.social/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } })
+        fetch("http://localhost:3000/api/profile/me",      { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("http://localhost:3000/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       const data      = await profileRes.json();
@@ -278,9 +278,15 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="info-item"><div class="info-label">Expertise</div><div class="info-value">${data.expertise || 'Not specified'}</div></div>
         </div>
         <button class="profile-edit-trigger" id="openEditBtn">✏️ Edit Profile</button>
+        <button class="profile-logout-btn" id="logoutBtn">🚪 Logout</button>
         <p class="profile-message" id="profileMessage"></p>
       </div>`;
     document.getElementById("openEditBtn").onclick = () => renderProfileEdit(data, badgeData);
+    document.getElementById("logoutBtn").onclick = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user_type");
+      window.location.href = "login.html";
+    };
   }
 
   function renderProfileEdit(data, badgeData) {
@@ -326,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
       formData.append("bio",       newBio);
       formData.append("expertise", newExpertise);
       if (newImageFile) formData.append("profilePic", newImageFile);
-      const resUpdate = await fetch("https://api.adviceme.social/api/profile/update", {
+      const resUpdate = await fetch("http://localhost:3000/api/profile/update", {
         method: "PUT", headers: { Authorization: `Bearer ${token}` }, body: formData
       });
       const updateData = await resUpdate.json();
@@ -343,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
     badgeValue.innerHTML = `<p style="text-align:center; opacity:0.6; padding:20px;">Loading...</p>`;
 
     try {
-      const res  = await fetch("https://api.adviceme.social/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } });
+      const res  = await fetch("http://localhost:3000/api/badge/calculate", { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
 
       const allLevels = [
@@ -395,7 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (chatBtn) {
     chatBtn.onclick = async () => {
       try {
-        const res   = await fetch("https://api.adviceme.social/api/chat/list", { headers: { Authorization: `Bearer ${token}` } });
+        const res   = await fetch("http://localhost:3000/api/chat/list", { headers: { Authorization: `Bearer ${token}` } });
         const chats = await res.json();
         if (!chats.length) { alert("No active chats yet."); return; }
         window.location.href = `chat.html?adviceId=${chats[0].advice_id}`;
