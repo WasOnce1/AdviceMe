@@ -261,12 +261,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   /* ================= ANDROID KEYBOARD FIX ================= */
   if (window.visualViewport) {
-    const chatInput    = document.querySelector('.chat-input');
-    const chatMessages = document.getElementById('chatMessages');
     window.visualViewport.addEventListener('resize', () => {
-      const offset = window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop;
-      chatInput.style.transform    = offset > 0 ? `translateY(-${offset}px)` : '';
-      chatMessages.style.marginBottom = offset > 0 ? `${offset}px` : '';
       chatMessages.scrollTop = chatMessages.scrollHeight;
     });
   }
