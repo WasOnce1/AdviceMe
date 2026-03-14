@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           div.classList.add("active");
           adviceId = chat.advice_id;
           loadChat();
-          if (window.innerWidth <= 768) openChat();
+          if (window.innerWidth <= 768) requestAnimationFrame(() => openChat());
         };
 
         chatList.appendChild(div);
@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadChatList();
   await loadChat();
 
-  if (adviceId && window.innerWidth <= 768) openChat();
+  if (adviceId && window.innerWidth <= 768) requestAnimationFrame(() => openChat());
 
   /* ================= ANDROID KEYBOARD FIX ================= */
   if (window.visualViewport) {
